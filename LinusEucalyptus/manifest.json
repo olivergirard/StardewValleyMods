@@ -1,0 +1,10 @@
+{
+    "Name": "LinusEucalyptus",
+    "Author": "Oliver Girard",
+    "Version": "1.0.0",
+    "Description": "A mod that changes Linus's name to \"Eucalyptus\". Based on an inside joke between me and a friend!",
+    "UniqueID": "OliverGirard.LinusEucalyptus",
+    "EntryDll": "LinusEucalyptus.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": [ "GitHub:olivergirard/StardewValleyMods/LinusEucalyptus" ]
+}

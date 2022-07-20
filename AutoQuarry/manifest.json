@@ -1,0 +1,11 @@
+{
+    "Name": "AutoQuarry",
+    "Author": "Oliver Girard",
+    "Version": "1.0.0",
+    "Description": "A mod that automatically collects resources from the quarry and places them in the player's inventory every morning.",
+    "UniqueID": "OliverGirard.AutoQuarry",
+    "EntryDll": "AutoQuarry.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": ["GitHub:olivergirard/StardewValleyMods/AutoQuarry"]
+}
+
