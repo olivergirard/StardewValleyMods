@@ -22,7 +22,7 @@ namespace AutoQuarry
         {
             GameLocation mountain = Game1.getLocationFromName("Mountain");
             StardewValley.Object obby;
-            StardewValley.TerrainFeatures.LargeTerrainFeature terrainFeature;
+            StardewValley.TerrainFeatures.Tree tree;
 
             /* Quarry coordinates determined manually. Subject to change.*/
 
@@ -38,15 +38,15 @@ namespace AutoQuarry
 
                     } else if (mountain.isTerrainFeatureAt(x, y))
                     {
-                        terrainFeature = mountain.getLargeTerrainFeatureAt(x, y);
-                        StardewValley.TerrainFeatures.TerrainFeature temp = (StardewValley.TerrainFeatures.TerrainFeature)terrainFeature;
-                        StardewValley.TerrainFeatures.Tree tree = (StardewValley.TerrainFeatures.Tree) temp;
-
-
-                        //if tree.growthStage doesnt exist w3hat happen?
-                        if ((tree.growthStage >= 5) && (tree.tapped == false))
+                        tree = GetTree(x, y);
+                        
+                        if (tree != null)
                         {
-                            AddTreeToInventory(tree);
+                            if ((tree.growthStage >= 5) && (!tree.tapped))
+                            {
+                                Game1.getLocationFromName("Mountain").removeEverythingFromThisTile(x, y);
+                                AddTreeToInventory(tree);
+                            }
                         }
                     }
                 }
@@ -209,27 +209,26 @@ namespace AutoQuarry
             return gemID;
         }
 
+        /* Adds the resourcess gathered from tree removal into the player's inventory. */
+
         private void AddTreeToInventory(StardewValley.TerrainFeatures.Tree tree)
         {
-
-            Game1.getLocationFromName("Mountain").OnTerrainFeatureRemoved(tree);
+            Game1.getLocationFromName("Mountain")._activeTerrainFeatures.Remove(tree);
 
             var rand = new Random();
 
             /* Trees that naturally grow in the quarry
              * 1 - oak tree
              * 2 - maple tree
-             * 3 - pine tree
              * 4 - winter oak tree
-             * 5 - winter maple tree
-             * 8 - mahogany tree */
+             * 5 - winter maple tree */
 
             Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(92, 5, false, -1, 0));
 
             int seedCount;
             int hardwoodCount = 0;
 
-            if ((tree.treeType >= 1) && (tree.treeType <= 5))
+            if ((tree.treeType == 1) || (tree.treeType == 2) || (tree.treeType == 4) || (tree.treeType == 5))
             {
                 Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(388, WoodCount(), false, -1, 0));
 
@@ -244,12 +243,9 @@ namespace AutoQuarry
                     case 5:
                         Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(310, seedCount, false, -1, 0));
                         break;
-                    case 3:
-                        Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(311, seedCount, false, -1, 0));
-                        break;
                 }
 
-                /* If player's foraging skill (2) has the lumberjack profession (14). */
+                /* If player's foraging skill has the lumberjack profession (14). */
 
                 while ((Game1.player.professions.Contains(14)) && rand.NextDouble() < 0.5)
                 {
@@ -257,22 +253,11 @@ namespace AutoQuarry
                 }
                 Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(709, hardwoodCount, false, -1, 0));
 
-            } else if (tree.treeType == 8)
-            {
-                seedCount = rand.Next(0, 2);
-                Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(292, seedCount, false, -1, 0));
-
-                hardwoodCount = 10;
-
-                if (Game1.player.professions.Contains(12))
-                {
-                    hardwoodCount *= (int) 1.25;
-                }
-                Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(709, hardwoodCount, false, -1, 0));
             }
         }
 
-        /* Used only for oak, maple, or pine trees. Mahogany trees do not drop this wood. */
+        /* Generates the amount of wood the player will receive after tree removal. */
+
         private int WoodCount()
         {
             int woodCount = 12;
@@ -301,6 +286,22 @@ namespace AutoQuarry
             }
 
             return woodCount;
+        }
+
+        /* Finds a tree object given a certain tile location. */
+
+        private StardewValley.TerrainFeatures.Tree GetTree(int x, int y)
+        {
+            GameLocation mountain = Game1.getLocationFromName("Mountain");
+            foreach (StardewValley.TerrainFeatures.TerrainFeature terrainFeature in mountain._activeTerrainFeatures)
+            {
+                if ((terrainFeature.getBoundingBox(terrainFeature.currentTileLocation)).Contains(x * 64 + 32, y * 64 + 32))
+                {
+                    StardewValley.TerrainFeatures.Tree tree = (StardewValley.TerrainFeatures.Tree)terrainFeature;
+                    return tree;
+                }
+            }
+            return null;
         }
     }
 }
