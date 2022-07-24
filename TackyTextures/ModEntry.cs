@@ -21,7 +21,8 @@ namespace TackyTextures
 
         private void AssetFilter(object sender, AssetRequestedEventArgs e)
         {
-            if (e.Name.StartsWith("Characters/Monsters/", false, true)) {
+            if (e.Name.StartsWith("Characters/Monsters/", false, true))
+            {
                 LoadMonsterAsset(sender, e);
             }
         }
