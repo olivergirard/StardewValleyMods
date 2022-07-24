@@ -1,10 +1,10 @@
 {
-    "Name": "TackyMobs",
+    "Name": "TackyTextures",
     "Author": "Oliver Girard",
     "Version": "1.0.0",
-    "Description": "A mod that adds some new (tacky) textures to the mobs. No Content Patcher needed.",
-    "UniqueID": "OliverGirard.TackyMobs",
-    "EntryDll": "TackyMobs.dll",
+    "Description": "A mod that adds some new (tacky) textures to the game. No Content Patcher needed.",
+    "UniqueID": "OliverGirard.TackyTextures",
+    "EntryDll": "TackyTextures.dll",
     "MinimumApiVersion": "3.0.0",
-    "UpdateKeys": ["GitHub:olivergirard/StardewValleyMods/TackyMobs"]
+    "UpdateKeys": ["GitHub:olivergirard/StardewValleyMods/TackyTextures"]
 }
