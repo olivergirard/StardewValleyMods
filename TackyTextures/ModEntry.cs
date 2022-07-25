@@ -69,6 +69,13 @@ namespace TackyTextures
             {
                 e.LoadFromModFile<Texture2D>("assets/Carbon Ghost.png", AssetLoadPriority.Medium);
             }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Dust Spirit"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Dust Spirit.png", AssetLoadPriority.Medium);
+            } else if (e.Name.IsEquivalentTo("Characters/Monsters/Fireball"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Fireball.png", AssetLoadPriority.Medium);
+            }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Ghost"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Ghost.png", AssetLoadPriority.Medium);
