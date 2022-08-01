@@ -45,6 +45,10 @@ namespace TackyTextures
             {
                 e.LoadFromModFile<Texture2D>("assets/Bat.png", AssetLoadPriority.Medium);
             }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Cat"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Cat.png", AssetLoadPriority.Medium);
+            }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Bat_dangerous"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Bat_dangerous.png", AssetLoadPriority.Medium);
