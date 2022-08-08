@@ -33,56 +33,52 @@ namespace TackyTextures
         {
             //TODO: double-check names once all done
 
-            if (e.Name.IsEquivalentTo("Characters/Monsters/Armored Bug"))
+            if (e.Name.IsEquivalentTo("Characters/Monsters/Angry Roger"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Armored Bug.png", AssetLoadPriority.Medium);
-            }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Armored Bug_dangerous"))
-            {
-                e.LoadFromModFile<Texture2D>("assets/Armored Bug_dangerous.PNG", AssetLoadPriority.Medium);
-            }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Bat"))
-            {
-                e.LoadFromModFile<Texture2D>("assets/Bat.png", AssetLoadPriority.Medium);
-            }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Cat"))
-            {
-                e.LoadFromModFile<Texture2D>("assets/Cat.png", AssetLoadPriority.Medium);
-            }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Bat_dangerous"))
-            {
-                e.LoadFromModFile<Texture2D>("assets/Bat_dangerous.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Angry Roger.png", AssetLoadPriority.Medium);
             }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Big Slime"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Big Slime.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Blue Squid"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Cat"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Blue Squid.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Cat.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Bug"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Crow"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Bug.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Crow.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Bug_dangerous"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Duggy"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Bug_dangerous.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Duggy.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Carbon Ghost"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Duggy_dangerous"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Carbon Ghost.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Duggy_dangerous.png", AssetLoadPriority.Medium);
             }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Dust Spirit"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Dust Spirit.png", AssetLoadPriority.Medium);
-            } else if (e.Name.IsEquivalentTo("Characters/Monsters/Fireball"))
+            } else if (e.Name.IsEquivalentTo("Characters/Monsters/Dwarvish Sentry"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Fireball.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/Dwarvish Sentry.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Ghost"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/False Magma Cap"))
             {
-                e.LoadFromModFile<Texture2D>("assets/Ghost.png", AssetLoadPriority.Medium);
+                e.LoadFromModFile<Texture2D>("assets/False Magma Cap.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Fly"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Fly.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Fly_dangerous"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Fly_dangerous.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Frog"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Frog.png", AssetLoadPriority.Medium);
             }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Grub"))
             {
