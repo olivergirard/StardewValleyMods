@@ -37,9 +37,21 @@ namespace TackyTextures
             {
                 e.LoadFromModFile<Texture2D>("assets/Angry Roger.png", AssetLoadPriority.Medium);
             }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Bat_dangerous"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Bat_dangerous.png", AssetLoadPriority.Medium);
+            }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Big Slime"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Big Slime.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Blue Squid"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Blue Squid.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Carbon Ghost"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Carbon Ghost.png", AssetLoadPriority.Medium);
             }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Cat"))
             {
@@ -67,6 +79,10 @@ namespace TackyTextures
             else if (e.Name.IsEquivalentTo("Characters/Monsters/False Magma Cap"))
             {
                 e.LoadFromModFile<Texture2D>("assets/False Magma Cap.png", AssetLoadPriority.Medium);
+            }
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Fireball"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Fireball.png", AssetLoadPriority.Medium);
             }
             else if (e.Name.IsEquivalentTo("Characters/Monsters/Fly"))
             {
