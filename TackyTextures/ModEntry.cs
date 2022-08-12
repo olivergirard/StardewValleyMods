@@ -69,10 +69,7 @@ namespace TackyTextures
             {
                 e.LoadFromModFile<Texture2D>("assets/Duggy_dangerous.png", AssetLoadPriority.Medium);
             }
-            else if (e.Name.IsEquivalentTo("Characters/Monsters/Dust Spirit"))
-            {
-                e.LoadFromModFile<Texture2D>("assets/Dust Spirit.png", AssetLoadPriority.Medium);
-            } else if (e.Name.IsEquivalentTo("Characters/Monsters/Dwarvish Sentry"))
+            else if (e.Name.IsEquivalentTo("Characters/Monsters/Dwarvish Sentry"))
             {
                 e.LoadFromModFile<Texture2D>("assets/Dwarvish Sentry.png", AssetLoadPriority.Medium);
             }
