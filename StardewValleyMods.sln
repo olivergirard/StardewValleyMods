@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32630.194
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoQuarry", "AutoQuarry\AutoQuarry.csproj", "{0E28BE3C-060F-44C6-A600-F8FE8ED27F6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinusEucalyptus", "LinusEucalyptus\LinusEucalyptus.csproj", "{946B1330-B53A-420A-89FE-DD11D4ACE238}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TackyTextures", "TackyTextures\TackyTextures.csproj", "{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TackyTextures", "TackyTextures\TackyTextures.csproj", "{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnhancedWheelSpinGame", "EnhancedWheelSpinGame\EnhancedWheelSpinGame.csproj", "{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

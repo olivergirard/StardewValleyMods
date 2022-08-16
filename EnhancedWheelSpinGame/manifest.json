@@ -1,0 +1,10 @@
+{
+    "Name": "EnhancedWheelSpinGame",
+    "Author": "Oliver Girard",
+    "Version": "1.0.0",
+    "Description": "A mod that makes the wheel spin game at the Stardew Valley Fair a little more interesting.",
+    "UniqueID": "OliverGirard.EnhancedWheelSpinGame",
+    "EntryDll": "EnhancedWheelSpinGame.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": [ "GitHub:olivergirard/StardewValleyMods/EnhancedWheelSpinGame" ]
+}
