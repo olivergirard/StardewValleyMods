@@ -14,14 +14,18 @@ namespace EnhancedWhenSpinGame
         {
             var harmony = new Harmony(this.ModManifest.UniqueID);
 
+            /* edits the wheel game itself */
+
             harmony.Patch(
                original: AccessTools.Method(typeof(StardewValley.Menus.WheelSpinGame), nameof(StardewValley.Menus.WheelSpinGame.update)),
                prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.NewWheel))
             );
 
+            /* edits the color options before the wheel game begins */
+
             harmony.Patch(
                original: AccessTools.Method(typeof(StardewValley.Event), nameof(StardewValley.Event.checkAction)),
-               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.NewAction))
+               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.WheelDialogue))
             );
 
             EnhancedWheelSpinGame.WheelSpinGame.Initialize(this.Monitor);
@@ -47,7 +51,7 @@ namespace EnhancedWhenSpinGame
             }
         }
 
-        /* TODO remove */
+        /* TODO remove after completion */
         private void Debug(object sender, SaveLoadedEventArgs e)
         {
             StardewValley.WorldDate newDate = new StardewValley.WorldDate();
