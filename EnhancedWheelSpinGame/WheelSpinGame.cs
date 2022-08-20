@@ -1,49 +1,128 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using StardewModdingAPI;
-using StardewModdingAPI.Events;
-using HarmonyLib;
-using System.Threading;
+﻿using StardewModdingAPI;
 using System;
 using StardewValley;
 using xTile.Dimensions;
-using System.Collections.Generic;
-using System.Reflection;
-using StardewValley.Characters;
-using System.Linq;
+using Microsoft.Xna.Framework;
+using StardewValley.BellsAndWhistles;
 
 namespace EnhancedWheelSpinGame {
 
-    internal class WheelSpinGame
+    public class WheelSpinGame
     {
         private static IMonitor Monitor;
         private static int optionPicked;
+        private static int wager;
+        private static double arrowRotation;
+        private static SparklingText resultText;
+        private static bool doneSpinning = false;
+        private static int timerBeforeStart = 1000;
+        private static double arrowRotationDeceleration = -0.00062831853071795862;
+        private static double arrowRotationVelocity = getArrowRotationVelocity();
 
         public static void Initialize(IMonitor monitor)
         {
             Monitor = monitor;
         }
 
-        //TODO
+        public static double getArrowRotationVelocity()
+        {
+            double arrowRotationVelocity = Math.PI / 16.0;
+            arrowRotationVelocity += (double)Game1.random.Next(0, 15) * Math.PI / 256.0;
+            if (Game1.random.NextDouble() < 0.5)
+            {
+                arrowRotationVelocity += Math.PI / 64.0;
+            }
 
-        public static bool NewWheel()
+            return getArrowRotationVelocity();
+        }
+
+        public static bool NewWheel(GameTime time)
         {
             try
             {
-                
 
+                NewWheel(time);
+                if (timerBeforeStart > 0)
+                {
+                    timerBeforeStart -= time.ElapsedGameTime.Milliseconds;
+                    if (timerBeforeStart <= 0)
+                    {
+                        //TODO make sure the sound is drawn from the right folder
+                        Game1.playSound("cowboy_monsterhit");
+                    }
+                } else
+                {
+                    double oldVelocity = arrowRotationVelocity;
+                    arrowRotationVelocity += arrowRotationDeceleration;
 
+                    if (arrowRotationVelocity <= Math.PI / 80.0 && oldVelocity > Math.PI / 80.0)
+                    {
+                        int color = GetColor();
 
+                        //"dwop" indicates wrong color chosen
+                        //arrowRotationVelocity = Math.PI / 48.0; after any failure
 
+                        if (optionPicked != color)
+                        {
+                            arrowRotationVelocity = Math.PI / 48.0;
+                            Game1.playSound("dwop");
+                        }
 
+                        if ((arrowRotationVelocity <= 0.0) && (doneSpinning == false))
+                        {
+                            doneSpinning = true;
+                            arrowRotationDeceleration = 0.0;
+                            arrowRotationVelocity = 0.0;
 
+                            bool won = false;
+                            if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.71238898038469)
+                            {
+                                if (optionPicked == color)
+                                {
+                                    won = true;
+                                }
+                            }
+                            
+                            if (won == true)
+                            {
+                                Game1.playSound("reward");
+                                resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11829"), Color.Lime, Color.White);
+                                Game1.player.festivalScore += wager;
+                            }
+                            else
+                            {
+                                resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11830"), Color.Red, Color.Transparent);
+                                Game1.playSound("fishEscape");
+                                Game1.player.festivalScore -= wager;
+                            }
+                        }
 
+                        double num = arrowRotation;
+                        arrowRotation += arrowRotationVelocity;
+                        if (num % (Math.PI / 2.0) > arrowRotation % (Math.PI / 2.0))
+                        {
+                            Game1.playSound("Cowboy_gunshot");
+                        }
+                        arrowRotation %= Math.PI * 2.0;
+                    }
+                }
 
-                return false; // don't run original logic
+                if (resultText != null && resultText.update(time))
+                {
+                    resultText = null;
+                }
+                if (doneSpinning && resultText == null)
+                {
+                    Game1.exitActiveMenu();
+                    Game1.player.canMove = true;
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
                 Monitor.Log($"Failed in {nameof(NewWheel)}:\n{ex}", LogLevel.Error);
-                return true; // run original logic
+                return true;
             }
         }
 
@@ -110,7 +189,21 @@ namespace EnhancedWheelSpinGame {
             return option;
         }
 
+        //TODO, this determines what color was landed on based on arrow rotation
+        //0, 45, 90, 135, 180, 225, 270, 315, 360
+        public int GetColor()
+        {
 
+        }
 
+        public void Wage(int value)
+        {
+            if (value <= Game1.player.festivalScore)
+            {
+                Game1.playSound("smallSelect");
+                Game1.activeClickableMenu = new StardewValley.Menus.WheelSpinGame(value);
+                wager = value;
+            }
+        }
     }
 }
