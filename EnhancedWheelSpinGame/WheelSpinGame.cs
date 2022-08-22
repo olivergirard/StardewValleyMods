@@ -60,7 +60,6 @@ namespace EnhancedWheelSpinGame {
                         int color = GetColor();
 
                         //"dwop" indicates wrong color chosen
-                        //arrowRotationVelocity = Math.PI / 48.0; after any failure
 
                         if (optionPicked != color)
                         {
@@ -191,9 +190,45 @@ namespace EnhancedWheelSpinGame {
 
         //TODO, this determines what color was landed on based on arrow rotation
         //0, 45, 90, 135, 180, 225, 270, 315, 360
-        public int GetColor()
+
+        /* 1 = orange, 2 = green, 3 = blue, 4 = pink, 5 = I */
+
+        public static int GetColor()
         {
 
+            if (arrowRotation <= 45)
+            {
+                return 4;
+
+            }
+            else if (arrowRotation <= 90)
+            {
+                return 3;
+            }
+            else if (arrowRotation <= 135)
+            {
+                return 2;
+            }
+            else if (arrowRotation <= 180)
+            {
+                return 1;
+            }
+            else if (arrowRotation <= 225)
+            {
+                return 4;
+            }
+            else if (arrowRotation <= 270)
+            {
+                return 3;
+            }
+            else if (arrowRotation <= 315)
+            {
+                return 2;
+            }
+            else
+            {
+                return 1;
+            }
         }
 
         public void Wage(int value)
