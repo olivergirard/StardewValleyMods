@@ -37,7 +37,7 @@ namespace EnhancedWheelSpinGame
                 arrowRotationVelocity += Math.PI / 64.0;
             }
 
-            return getArrowRotationVelocity();
+            return arrowRotationVelocity;
         }
 
         public static bool NewWheel(GameTime time)
@@ -245,7 +245,7 @@ namespace EnhancedWheelSpinGame
             }
         }
 
-        public void Wage(int value)
+        public static void Wage(int value)
         {
             if (value <= Game1.player.festivalScore)
             {

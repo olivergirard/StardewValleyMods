@@ -45,17 +45,15 @@ namespace EnhancedWhenSpinGame
 
         private void LoadWheelAssets(object sender, AssetRequestedEventArgs e)
         {
-            if (e.Name.StartsWith("LooseSprites/", false, true))
+            if (e.Name.IsEquivalentTo("LooseSprites/Cursors"))
             {
-                if (e.Name.IsEquivalentTo("LooseSprites/Cursors"))
-                {
-                    e.LoadFromModFile<Texture2D>("assets/Cursors.png", AssetLoadPriority.Medium);
-                }
-                else if (e.Name.IsEquivalentTo("LooseSprites/Festivals"))
-                {
-                    e.LoadFromModFile<Texture2D>("assets/Festivals.png", AssetLoadPriority.Medium);
-                }
+                e.LoadFromModFile<Texture2D>("assets/Cursors.png", AssetLoadPriority.Medium);
             }
+            else if (e.Name.IsEquivalentTo("Maps/Festivals"))
+            {
+                e.LoadFromModFile<Texture2D>("assets/Festivals.png", AssetLoadPriority.Medium);
+            }
+
         }
 
         /* TODO remove after completion */
