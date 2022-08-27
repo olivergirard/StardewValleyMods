@@ -4,8 +4,12 @@ using StardewValley;
 using xTile.Dimensions;
 using Microsoft.Xna.Framework;
 using StardewValley.BellsAndWhistles;
+using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
-namespace EnhancedWheelSpinGame {
+namespace EnhancedWheelSpinGame
+{
 
     public class WheelSpinGame
     {
@@ -50,7 +54,8 @@ namespace EnhancedWheelSpinGame {
                         //TODO make sure the sound is drawn from the right folder
                         Game1.playSound("cowboy_monsterhit");
                     }
-                } else
+                }
+                else
                 {
                     double oldVelocity = arrowRotationVelocity;
                     arrowRotationVelocity += arrowRotationDeceleration;
@@ -81,7 +86,7 @@ namespace EnhancedWheelSpinGame {
                                     won = true;
                                 }
                             }
-                            
+
                             if (won == true)
                             {
                                 Game1.playSound("reward");
@@ -125,49 +130,58 @@ namespace EnhancedWheelSpinGame {
             }
         }
 
-        public bool WheelDialogue(Location tileLocation, Farmer player)
+
+        public static bool WheelDialogue(Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who)
         {
             try
             {
-                int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
-
-                if ((tileIndex == 308) || (tileIndex == 309))
+                if ((Game1.Date.Season == "Fall") && (Game1.Date.DayOfMonth == 16))
                 {
-                    Response[] colors = new Response[5]
+                    int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
+
+                    if ((tileIndex == 308) || (tileIndex == 309))
+                    {
+                        Response[] colors = new Response[5]
                         {
-                        new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
-                        new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
-                        new Response("Blue", "Blue"),
-                        new Response("Pink", "Pink"),
-                        new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
+                            new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
+                            new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
+                            new Response("Blue", "Blue"),
+                            new Response("Pink", "Pink"),
+                            new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
                         };
 
-                    if ((player.IsLocalPlayer) && (Game1.dayOfMonth.Equals(16)) && (Game1.currentSeason.Equals("Fall")))
-                    {
-                        Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
+                        if ((who.IsLocalPlayer) && (Game1.dayOfMonth.Equals(16)) && (Game1.currentSeason.Equals("Fall")))
+                        {
+                            Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
 
-                        optionPicked = DetermineOptionPicked(colors);
+                            optionPicked = DetermineOptionPicked(colors);
+                        }
+
+                        return false;
+
                     }
                 }
 
-                return false;
+                return true;
 
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return true;
             }
         }
 
-        public int DetermineOptionPicked(Response[] colors) {
+        public static int DetermineOptionPicked(Response[] colors)
+        {
 
             int option;
 
             /* 1 = orange, 2 = green, 3 = blue, 4 = pink, 5 = I */
-            
+
             if (Game1.currentLocation.answerDialogue(colors[0]))
             {
                 option = 1;
-            } 
+            }
             else if (Game1.currentLocation.answerDialogue(colors[1]))
             {
                 option = 2;
