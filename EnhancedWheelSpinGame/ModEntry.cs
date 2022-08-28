@@ -18,7 +18,7 @@ namespace EnhancedWhenSpinGame
 
             harmony.Patch(
                original: AccessTools.Method(typeof(StardewValley.Menus.WheelSpinGame), nameof(StardewValley.Menus.WheelSpinGame.update)),
-               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.NewWheel))
+               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.update))
             );
 
             /* edits the color options before the wheel game begins */
@@ -33,6 +33,13 @@ namespace EnhancedWhenSpinGame
             harmony.Patch(
                original: AccessTools.Method(typeof(StardewValley.Event), nameof(StardewValley.Event.betStarTokens)),
                prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.Wage))
+            );
+
+            /* makes the final option in the selection menu work correctly */
+
+            harmony.Patch(
+               original: AccessTools.Method(typeof(StardewValley.Event), nameof(StardewValley.Event.answerDialogue)),
+               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.AnswerDialogue))
             );
 
             EnhancedWheelSpinGame.WheelSpinGame.Initialize(this.Monitor);
@@ -59,8 +66,7 @@ namespace EnhancedWhenSpinGame
         /* TODO remove after completion */
         private void Debug(object sender, SaveLoadedEventArgs e)
         {
-            StardewValley.WorldDate newDate = new StardewValley.WorldDate();
-            newDate.DayOfMonth = 16;
+            StardewValley.Game1.dayOfMonth = 16;
         }
 
 

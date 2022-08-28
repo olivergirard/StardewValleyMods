@@ -7,6 +7,8 @@ using StardewValley.BellsAndWhistles;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using StardewValley.Menus;
+using System.Threading;
 
 namespace EnhancedWheelSpinGame
 {
@@ -40,132 +42,132 @@ namespace EnhancedWheelSpinGame
             return arrowRotationVelocity;
         }
 
-        public static bool NewWheel(GameTime time)
+        public static void update(GameTime time)
         {
-            try
+            if (timerBeforeStart <= 0)
             {
-
-                NewWheel(time);
-                if (timerBeforeStart > 0)
+                double oldVelocity = arrowRotationVelocity;
+                arrowRotationVelocity += arrowRotationDeceleration;
+                if (arrowRotationVelocity <= Math.PI / 80.0 && oldVelocity > Math.PI / 80.0)
                 {
-                    timerBeforeStart -= time.ElapsedGameTime.Milliseconds;
-                    if (timerBeforeStart <= 0)
+                    bool colorChoiceGreen2 = Game1.currentLocation.currentEvent.specialEventVariable2;
+                    if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.3196898986859651 && Game1.random.NextDouble() < (double)((float)Game1.player.LuckLevel / 15f))
                     {
-                        //TODO make sure the sound is drawn from the right folder
-                        Game1.playSound("cowboy_monsterhit");
-                    }
-                }
-                else
-                {
-                    double oldVelocity = arrowRotationVelocity;
-                    arrowRotationVelocity += arrowRotationDeceleration;
-
-                    if (arrowRotationVelocity <= Math.PI / 80.0 && oldVelocity > Math.PI / 80.0)
-                    {
-                        int color = GetColor();
-
-                        //"dwop" indicates wrong color chosen
-
-                        if (optionPicked != color)
+                        if (colorChoiceGreen2)
                         {
                             arrowRotationVelocity = Math.PI / 48.0;
                             Game1.playSound("dwop");
                         }
-
-                        if ((arrowRotationVelocity <= 0.0) && (doneSpinning == false))
-                        {
-                            doneSpinning = true;
-                            arrowRotationDeceleration = 0.0;
-                            arrowRotationVelocity = 0.0;
-
-                            bool won = false;
-                            if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.71238898038469)
-                            {
-                                if (optionPicked == color)
-                                {
-                                    won = true;
-                                }
-                            }
-
-                            if (won == true)
-                            {
-                                Game1.playSound("reward");
-                                resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11829"), Color.Lime, Color.White);
-                                Game1.player.festivalScore += wager;
-                            }
-                            else
-                            {
-                                resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11830"), Color.Red, Color.Transparent);
-                                Game1.playSound("fishEscape");
-                                Game1.player.festivalScore -= wager;
-                            }
-                        }
-
-                        double num = arrowRotation;
-                        arrowRotation += arrowRotationVelocity;
-                        if (num % (Math.PI / 2.0) > arrowRotation % (Math.PI / 2.0))
-                        {
-                            Game1.playSound("Cowboy_gunshot");
-                        }
-                        arrowRotation %= Math.PI * 2.0;
+                    }
+                    else if ((arrowRotation + Math.PI) % (Math.PI * 2.0) <= 4.3196898986859651 && !colorChoiceGreen2 && Game1.random.NextDouble() < (double)((float)Game1.player.LuckLevel / 20f))
+                    {
+                        arrowRotationVelocity = Math.PI / 48.0;
+                        Game1.playSound("dwop");
                     }
                 }
-
-                if (resultText != null && resultText.update(time))
+                if (arrowRotationVelocity <= 0.0 && !doneSpinning)
                 {
-                    resultText = null;
+                    doneSpinning = true;
+                    arrowRotationDeceleration = 0.0;
+                    arrowRotationVelocity = 0.0;
+                    int color = GetColor();
+                    bool won = false;
+                    if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.71238898038469)
+                    {
+                        if (color == optionPicked)
+                        {
+                            won = true;
+                        }
+                    }
+                    else if (color == optionPicked)
+                    {
+                        won = true;
+                    }
+                    if (won)
+                    {
+                        Game1.playSound("reward");
+                        resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11829"), Color.Lime, Color.White);
+                        Game1.player.festivalScore += wager;
+                    }
+                    else
+                    {
+                        resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11830"), Color.Red, Color.Transparent);
+                        Game1.playSound("fishEscape");
+                        Game1.player.festivalScore -= wager;
+                    }
                 }
-                if (doneSpinning && resultText == null)
+                double num = arrowRotation;
+                arrowRotation += arrowRotationVelocity;
+                if (num % (Math.PI / 2.0) > arrowRotation % (Math.PI / 2.0))
                 {
-                    Game1.exitActiveMenu();
-                    Game1.player.canMove = true;
+                    Game1.playSound("Cowboy_gunshot");
                 }
-
-                return false;
+                arrowRotation %= Math.PI * 2.0;
             }
-            catch (Exception ex)
+            else
             {
-                Monitor.Log($"Failed in {nameof(NewWheel)}:\n{ex}", LogLevel.Error);
-                return true;
+                timerBeforeStart -= time.ElapsedGameTime.Milliseconds;
+                if (timerBeforeStart <= 0)
+                {
+                    Game1.playSound("cowboy_monsterhit");
+                }
+            }
+            if (resultText != null && resultText.update(time))
+            {
+                resultText = null;
+            }
+            if (doneSpinning && resultText == null)
+            {
+                Game1.exitActiveMenu();
+                Game1.player.canMove = true;
             }
         }
 
+        //TODO fix blue option in menu so it persists
+        public static bool AnswerDialogue(string questionKey, int answerChoice)
+        {
+            if (questionKey == "wheelBet")
+            {
+                if (answerChoice == 4)
+                {
+                    Game1.activeClickableMenu.emergencyShutDown();
+                    return false;
+                } else if (answerChoice == 2)
+                {
+                    var instance = new Event();
+                    instance.answerDialogue("wheelBet", 0);
+
+                    return false;
+                } else
+                {
+                    return true;
+                }
+            }
+
+            return true;
+        }
 
         public static bool WheelDialogue(Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who)
         {
-            try
+            int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
+
+            if ((tileIndex == 308) || (tileIndex == 309))
             {
-                if ((Game1.Date.Season == "Fall") && (Game1.Date.DayOfMonth == 16))
+                Response[] colors = new Response[5]
                 {
-                    int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
+                        new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
+                        new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
+                        new Response("Blue", "Blue"),
+                        new Response("Pink", "Pink"),
+                        new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
+                };
 
-                    if ((tileIndex == 308) || (tileIndex == 309))
-                    {
-                        Response[] colors = new Response[5]
-                        {
-                            new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
-                            new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
-                            new Response("Blue", "Blue"),
-                            new Response("Pink", "Pink"),
-                            new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
-                        };
+                Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
+                optionPicked = DetermineOptionPicked(colors);
 
-                        if ((who.IsLocalPlayer) && (Game1.dayOfMonth.Equals(16)) && (Game1.currentSeason.Equals("Fall")))
-                        {
-                            Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
+                return false;
 
-                            optionPicked = DetermineOptionPicked(colors);
-                        }
-
-                        return false;
-
-                    }
-                }
-
-                return true;
-
-            }
-            catch (Exception)
+            } else
             {
                 return true;
             }
