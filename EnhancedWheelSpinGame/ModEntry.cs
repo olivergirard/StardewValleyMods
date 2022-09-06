@@ -28,20 +28,6 @@ namespace EnhancedWhenSpinGame
                prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.WheelDialogue))
             );
 
-            /* edits the waging method to save the wager amount */
-
-            harmony.Patch(
-               original: AccessTools.Method(typeof(StardewValley.Event), nameof(StardewValley.Event.betStarTokens)),
-               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.Wage))
-            );
-
-            /* makes the final option in the selection menu work correctly */
-
-            harmony.Patch(
-               original: AccessTools.Method(typeof(StardewValley.Event), nameof(StardewValley.Event.answerDialogue)),
-               prefix: new HarmonyMethod(typeof(EnhancedWheelSpinGame.WheelSpinGame), nameof(EnhancedWheelSpinGame.WheelSpinGame.AnswerDialogue))
-            );
-
             EnhancedWheelSpinGame.WheelSpinGame.Initialize(this.Monitor);
 
             helper.Events.GameLoop.SaveLoaded += this.Debug;

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using StardewValley.Menus;
 using System.Threading;
+using System.Threading.Tasks.Dataflow;
 
 namespace EnhancedWheelSpinGame
 {
@@ -17,13 +18,21 @@ namespace EnhancedWheelSpinGame
     {
         private static IMonitor Monitor;
         private static int optionPicked;
-        private static int wager;
         private static double arrowRotation;
         private static SparklingText resultText;
-        private static bool doneSpinning = false;
-        private static int timerBeforeStart = 1000;
-        private static double arrowRotationDeceleration = -0.00062831853071795862;
-        private static double arrowRotationVelocity = getArrowRotationVelocity();
+        private static bool doneSpinning;
+        private static int timerBeforeStart;
+        private static double arrowRotationDeceleration;
+        private static double arrowRotationVelocity;
+
+        private static Response[] colors = new Response[5]
+        {
+            new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
+            new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
+            new Response("Blue", "Blue"),
+            new Response("Pink", "Pink"),
+            new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
+        };
 
         public static void Initialize(IMonitor monitor)
         {
@@ -44,22 +53,24 @@ namespace EnhancedWheelSpinGame
 
         public static void update(GameTime time)
         {
+            doneSpinning = false;
+            timerBeforeStart = 1000;
+            arrowRotationDeceleration = -0.00062831853071795862;
+            arrowRotationVelocity = getArrowRotationVelocity();
+            arrowRotation = 0;
+
             if (timerBeforeStart <= 0)
             {
                 double oldVelocity = arrowRotationVelocity;
                 arrowRotationVelocity += arrowRotationDeceleration;
                 if (arrowRotationVelocity <= Math.PI / 80.0 && oldVelocity > Math.PI / 80.0)
                 {
-                    bool colorChoiceGreen2 = Game1.currentLocation.currentEvent.specialEventVariable2;
                     if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.3196898986859651 && Game1.random.NextDouble() < (double)((float)Game1.player.LuckLevel / 15f))
                     {
-                        if (colorChoiceGreen2)
-                        {
-                            arrowRotationVelocity = Math.PI / 48.0;
-                            Game1.playSound("dwop");
-                        }
+                        arrowRotationVelocity = Math.PI / 48.0;
+                        Game1.playSound("dwop");
                     }
-                    else if ((arrowRotation + Math.PI) % (Math.PI * 2.0) <= 4.3196898986859651 && !colorChoiceGreen2 && Game1.random.NextDouble() < (double)((float)Game1.player.LuckLevel / 20f))
+                    else if ((arrowRotation + Math.PI) % (Math.PI * 2.0) <= 4.3196898986859651 && Game1.random.NextDouble() < (double)((float)Game1.player.LuckLevel / 20f))
                     {
                         arrowRotationVelocity = Math.PI / 48.0;
                         Game1.playSound("dwop");
@@ -72,28 +83,21 @@ namespace EnhancedWheelSpinGame
                     arrowRotationVelocity = 0.0;
                     int color = GetColor();
                     bool won = false;
-                    if (arrowRotation > Math.PI / 2.0 && arrowRotation <= 4.71238898038469)
-                    {
-                        if (color == optionPicked)
-                        {
-                            won = true;
-                        }
-                    }
-                    else if (color == optionPicked)
+
+                    if (color == optionPicked)
                     {
                         won = true;
                     }
+
                     if (won)
                     {
                         Game1.playSound("reward");
                         resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11829"), Color.Lime, Color.White);
-                        Game1.player.festivalScore += wager;
                     }
                     else
                     {
                         resultText = new SparklingText(Game1.dialogueFont, Game1.content.LoadString("Strings\\StringsFromCSFiles:WheelSpinGame.cs.11830"), Color.Red, Color.Transparent);
                         Game1.playSound("fishEscape");
-                        Game1.player.festivalScore -= wager;
                     }
                 }
                 double num = arrowRotation;
@@ -123,22 +127,43 @@ namespace EnhancedWheelSpinGame
             }
         }
 
+        public static bool WheelDialogue(Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who)
+        {
+            int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
+
+            if ((tileIndex == 308) || (tileIndex == 309))
+            {
+                Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
+                optionPicked = DetermineOptionPicked();
+                return false;
+
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         //TODO fix blue option in menu so it persists
         public static bool AnswerDialogue(string questionKey, int answerChoice)
         {
+            answerChoice = optionPicked;
+
             if (questionKey == "wheelBet")
             {
                 if (answerChoice == 4)
                 {
                     Game1.activeClickableMenu.emergencyShutDown();
                     return false;
-                } else if (answerChoice == 2)
+                }
+                else if (answerChoice == 2)
                 {
                     var instance = new Event();
                     instance.answerDialogue("wheelBet", 0);
 
                     return false;
-                } else
+                }
+                else
                 {
                     return true;
                 }
@@ -147,33 +172,7 @@ namespace EnhancedWheelSpinGame
             return true;
         }
 
-        public static bool WheelDialogue(Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who)
-        {
-            int tileIndex = Game1.currentLocation.getTileIndexAt(tileLocation.X, tileLocation.Y, "Buildings");
-
-            if ((tileIndex == 308) || (tileIndex == 309))
-            {
-                Response[] colors = new Response[5]
-                {
-                        new Response("Orange", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1645")),
-                        new Response("Green", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1647")),
-                        new Response("Blue", "Blue"),
-                        new Response("Pink", "Pink"),
-                        new Response("I", Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1650"))
-                };
-
-                Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
-                optionPicked = DetermineOptionPicked(colors);
-
-                return false;
-
-            } else
-            {
-                return true;
-            }
-        }
-
-        public static int DetermineOptionPicked(Response[] colors)
+        public static int DetermineOptionPicked()
         {
 
             int option;
@@ -212,48 +211,55 @@ namespace EnhancedWheelSpinGame
         public static int GetColor()
         {
 
-            if (arrowRotation <= 45)
-            {
-                return 4;
+            // making sure 0 <= arrowRotation < 360
 
-            }
-            else if (arrowRotation <= 90)
+            while (arrowRotation >= 360 * (Math.PI / 180))
             {
-                return 3;
+                arrowRotation -= 360 * (Math.PI / 180);
             }
-            else if (arrowRotation <= 135)
+
+
+            if (arrowRotation < Math.PI)
             {
-                return 2;
-            }
-            else if (arrowRotation <= 180)
-            {
-                return 1;
-            }
-            else if (arrowRotation <= 225)
-            {
-                return 4;
-            }
-            else if (arrowRotation <= 270)
-            {
-                return 3;
-            }
-            else if (arrowRotation <= 315)
-            {
-                return 2;
+                //top half of wheel
+
+                if (arrowRotation < 45 * (Math.PI / 180))
+                {
+                    return 4;
+                }
+                else if (arrowRotation < 90 * (Math.PI / 180))
+                {
+                    return 3;
+                }
+                else if (arrowRotation < 135 * (Math.PI / 180))
+                {
+                    return 2;
+                }
+                else
+                {
+                    return 1;
+                }
             }
             else
             {
-                return 1;
-            }
-        }
+                //bottom half of wheel
 
-        public static void Wage(int value)
-        {
-            if (value <= Game1.player.festivalScore)
-            {
-                Game1.playSound("smallSelect");
-                Game1.activeClickableMenu = new StardewValley.Menus.WheelSpinGame(value);
-                wager = value;
+                if (arrowRotation < 225 * (Math.PI / 180))
+                {
+                    return 4;
+                }
+                else if (arrowRotation < 270 * (Math.PI / 180) / 180)
+                {
+                    return 3;
+                }
+                else if (arrowRotation < 315 * (Math.PI / 180))
+                {
+                    return 2;
+                }
+                else
+                {
+                    return 1;
+                }
             }
         }
     }
