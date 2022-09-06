@@ -13,3 +13,6 @@ A mod that changes Linus's name to "Eucalyptus". Based on an inside joke between
 
 ### EnhancedWheelSpinGame
 A mod that makes the wheel spinning game at the Stardew Valley Fair a little more interesting with added colors and higher stakes. This mod adds two new colors to the wheel and splits the wheel into eight different sections.
+
+### TackyTextures
+A mod that adds new textures to the assets of the game. This is a visual mod that can be used without the Content Patcher mod. It does not modify gameplay mechanics and exists purely to change the design of the game.
