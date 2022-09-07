@@ -4,12 +4,6 @@ using StardewValley;
 using xTile.Dimensions;
 using Microsoft.Xna.Framework;
 using StardewValley.BellsAndWhistles;
-using HarmonyLib;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using StardewValley.Menus;
-using System.Threading;
-using System.Threading.Tasks.Dataflow;
 
 namespace EnhancedWheelSpinGame
 {
@@ -133,8 +127,32 @@ namespace EnhancedWheelSpinGame
 
             if ((tileIndex == 308) || (tileIndex == 309))
             {
-                Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, "wheelBet");
-                optionPicked = DetermineOptionPicked();
+
+                Game1.currentLocation.createQuestionDialogue(Game1.parseText(Game1.content.LoadString("Strings\\StringsFromCSFiles:Event.cs.1652")), colors, delegate (Farmer _, string answer)
+                {
+                    switch (answer)
+                    {
+                        case "Orange":
+                            optionPicked = 1;
+                            break;
+                        case "Green":
+                            optionPicked = 2;
+                            break;
+                        case "Blue":
+                            optionPicked = 3;
+                            break;
+                        case "Pink":
+                            optionPicked = 4;
+                            break;
+                        case "I":
+                            optionPicked = 5;
+                            break;
+                    }
+
+                    Monitor.Log("" + optionPicked, LogLevel.Error);
+                    AnswerDialogue("wheelBet", optionPicked);
+                });
+
                 return false;
 
             }
@@ -144,69 +162,22 @@ namespace EnhancedWheelSpinGame
             }
         }
 
-        //TODO fix blue option in menu so it persists
-        public static bool AnswerDialogue(string questionKey, int answerChoice)
-        {
-            answerChoice = optionPicked;
-
-            if (questionKey == "wheelBet")
-            {
-                if (answerChoice == 4)
-                {
-                    Game1.activeClickableMenu.emergencyShutDown();
-                    return false;
-                }
-                else if (answerChoice == 2)
-                {
-                    var instance = new Event();
-                    instance.answerDialogue("wheelBet", 0);
-
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-            return true;
-        }
-
-        public static int DetermineOptionPicked()
+        public static void AnswerDialogue(string questionKey, int answerChoice)
         {
 
-            int option;
-
-            /* 1 = orange, 2 = green, 3 = blue, 4 = pink, 5 = I */
-
-            if (Game1.currentLocation.answerDialogue(colors[0]))
+            if (answerChoice == 5)
             {
-                option = 1;
+                Game1.activeClickableMenu.emergencyShutDown();
             }
-            else if (Game1.currentLocation.answerDialogue(colors[1]))
+            else 
             {
-                option = 2;
-            }
-            else if (Game1.currentLocation.answerDialogue(colors[2]))
-            {
-                option = 3;
-            }
-            else if (Game1.currentLocation.answerDialogue(colors[3]))
-            {
-                option = 4;
-            }
-            else
-            {
-                option = 5;
+                var instance = new Event();
+                instance.answerDialogue("wheelBet", 0);
             }
 
-            return option;
         }
 
-        //TODO, this determines what color was landed on based on arrow rotation
-        //0, 45, 90, 135, 180, 225, 270, 315, 360
-
-        /* 1 = orange, 2 = green, 3 = blue, 4 = pink, 5 = I */
+        /* 1 = orange, 2 = green, 3 = blue, 4 = pink */
 
         public static int GetColor()
         {
