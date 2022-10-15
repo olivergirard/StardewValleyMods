@@ -48,13 +48,5 @@ namespace EnhancedWhenSpinGame
             }
 
         }
-
-        /* TODO remove after completion */
-        private void Debug(object sender, SaveLoadedEventArgs e)
-        {
-            StardewValley.Game1.dayOfMonth = 16;
-        }
-
-
     }
 }

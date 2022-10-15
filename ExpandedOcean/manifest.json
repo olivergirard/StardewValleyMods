@@ -1,0 +1,11 @@
+{
+    "Name": "ExpandedOcean",
+    "Author": "Oliver Girard",
+    "Version": "1.0.0",
+    "Description": "A mod that adds some new creatures to some of the game's bodies of water.",
+    "UniqueID": "OliverGirard.ExpandedOcean",
+    "EntryDll": "ExpandedOcean.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": ["GitHub:olivergirard/StardewValleyMods/ExpandedOcean"]
+}
+

@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LinusEucalyptus", "LinusEuc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TackyTextures", "TackyTextures\TackyTextures.csproj", "{8EE6EB34-5EB3-4EB6-93C0-4DB91BF05920}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnhancedWheelSpinGame", "EnhancedWheelSpinGame\EnhancedWheelSpinGame.csproj", "{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnhancedWheelSpinGame", "EnhancedWheelSpinGame\EnhancedWheelSpinGame.csproj", "{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpandedOcean", "ExpandedOcean\ExpandedOcean.csproj", "{3685A4D6-00D5-4D81-A844-EF4210E53B81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
