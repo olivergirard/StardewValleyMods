@@ -30,7 +30,6 @@ namespace EnhancedWhenSpinGame
 
             EnhancedWheelSpinGame.WheelSpinGame.Initialize(this.Monitor);
 
-            helper.Events.GameLoop.SaveLoaded += this.Debug;
             helper.Events.Content.AssetRequested += this.LoadWheelAssets;
         }
 
