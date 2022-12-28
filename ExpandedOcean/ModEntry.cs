@@ -46,11 +46,11 @@ namespace ExpandedOcean
                         /* Any key above 935 should work as of v1.5 update.
                          * Format: Name/Difficulty/Behavior/MinimumSize/MaximumSize/StartTime EndTime/Seasons/RainyOrSunnyWeather/UNUSED/MinimumDepth/SpawnMultiplier/DepthMultiplier/MinimumLevelNeeded
                          * More info here: https://stardewcommunitywiki.com/Modding:Fish_data */
-
-                        //TODO Edit values to MinimumDepth = 1 SpawnMultiplier = 1 DepthMultiplier = 1 during debugging. Change seasons/time if necessary.
+                        
+                        //TODO time changed from 1900 2600. seasons changed from spring summer for chimaera
 
                         editor.Data.Add(936, "Ocean Sunfish/70/smooth/70/121/600 1900/summer fall/both/ /3/.2/.3/0");
-                        editor.Data.Add(937, "Chimaera/80/sinker/24/80/1900 2600/spring summer/both/ /1/1/1/5");
+                        editor.Data.Add(937, "Chimaera/80/sinker/24/80/600 2600/spring summer fall/both/ /1/1/1/5");
                     });
 
                     fishDataAdded = true;
@@ -70,7 +70,9 @@ namespace ExpandedOcean
                          * More info here: https://stardewcommunitywiki.com/Modding:Object_data */
 
                         editor.Data.Add(936, "Ocean Sunfish/800/15/Fish -4/Ocean Sunfish/A very heavy and very bony fish./Day Night^Summer Fall");
-                        editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Night^Spring Summer");
+
+                        //TODO chimaera is Night^Spring Summer
+                        editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Day Night^Spring Summer Fall");
                     });
 
                     objectDataAdded = true;
@@ -95,7 +97,10 @@ namespace ExpandedOcean
 
                         string springInfo = "129 -1 131 -1 147 -1 148 -1 152 -1 708 -1 267 -1 937 -1/";
                         string summerInfo = "128 -1 130 -1 146 -1 149 -1 150 -1 152 -1 155 -1 708 -1 701 -1 267 -1 937 -1 936 -1/";
-                        string fallInfo = "129 - 1 131 - 1 148 - 1 150 - 1 152 - 1 154 - 1 155 - 1 705 - 1 701 - 1 936 -1/";
+
+                        //TODO remove chimaera from fallInfo
+
+                        string fallInfo = "129 - 1 131 - 1 148 - 1 150 - 1 152 - 1 154 - 1 155 - 1 705 - 1 701 - 1 936 -1 937 -1/";
                         string winterInfo = "708 - 1 130 - 1 131 - 1 146 - 1 147 - 1 150 - 1 151 - 1 152 - 1 154 - 1 705 - 1/";
 
                         string updatedBeach = beachInfo + springInfo + summerInfo + fallInfo + winterInfo + artifactData;
