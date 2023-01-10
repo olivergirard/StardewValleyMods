@@ -79,7 +79,7 @@ namespace ExpandedOcean
                 }
             }
 
-            if (fishDataAdded == false)
+            if (locationDataAdded == false)
             {
                 if (e.NameWithoutLocale.IsEquivalentTo("Data/Locations"))
                 {
@@ -108,31 +108,28 @@ namespace ExpandedOcean
                         editor.Data["Beach"] = updatedBeach;
                     });
 
-                    fishDataAdded = true;
+                    locationDataAdded = true;
                 }
             }
         }
 
         /* Determines if the fish accessed is one of the new fish added. */
 
-        public static Object SpecialFish(Object result)
+        public static void SpecialFish(ref Object __result)
         {
             Texture2D fish = null;
 
-            if (result.Name.Equals("Chimaera"))
+            if (__result.Name.Equals("Chimaera"))
             {
                 fish = Texture2D.FromFile(Game1.graphics.GraphicsDevice, "assets/Chimaera.png");
                 Game1.spriteBatch.Draw(fish, Game1.GlobalToLocal(Game1.viewport, Game1.player.Position + new Vector2(0f, -56f)), Color.White);
-                return new Object(937, 1);
-            } else if (result.Name.Equals("Ocean Sunfish"))
+                __result = new Object(937, 1);
+            } else if (__result.Name.Equals("Ocean Sunfish"))
             {
                 fish = Texture2D.FromFile(Game1.graphics.GraphicsDevice, "assets/Ocean Sunfish.png");
                 Game1.spriteBatch.Draw(fish, Game1.GlobalToLocal(Game1.viewport, Game1.player.Position + new Vector2(0f, -56f)), Color.White);
-                return new Object(936, 1);
+                __result = new Object(936, 1);
             }
-
-            return result;
-
         }
     }
 }
