@@ -4,6 +4,9 @@ using StardewModdingAPI.Events;
 using HarmonyLib;
 using StardewValley;
 using Microsoft.Xna.Framework;
+using System;
+using System.IO;
+using StardewValley.Monsters;
 
 namespace ExpandedOcean
 {
@@ -12,7 +15,8 @@ namespace ExpandedOcean
         public static bool fishDataAdded = false;
         public static bool objectDataAdded = false;
         public static bool locationDataAdded = false;
-        public static Asset asset;
+
+        public static int fishID;
 
         /* Entry point. */
 
@@ -29,6 +33,7 @@ namespace ExpandedOcean
             );
 
             helper.Events.Content.AssetRequested += AddFishData;
+            helper.Events.Content.AssetRequested += ChangeFishSprite;
         }
 
         /* Adds fish information to game files. */
@@ -117,21 +122,41 @@ namespace ExpandedOcean
 
         /* Determines if the fish accessed is one of the new fish added. */
 
-        public static Object SpecialFish(Object result)
+        public static StardewValley.Object SpecialFish(StardewValley.Object result)
         {
-            Texture2D fish = null;
-
             if (result.Name.Equals("Chimaera"))
             {
-                asset = LoadFromModFile<Texture2D>("assets/Chimaera.png", AssetLoadPriority.Medium);
-                return new Object(937, 1);
+                fishID = 937;
+                return new StardewValley.Object(937, 1);
             } else if (result.Name.Equals("Ocean Sunfish"))
             {
-                asset = LoadFromModFile<Texture2D>("assets/Ocean Sunfish.png", AssetLoadPriority.Medium);
-                return new Object(936, 1);
+                fishID = 936;
+                return new StardewValley.Object(936, 1);
             }
 
             return result;
         }
+
+        public void ChangeFishSprite(object sender, AssetRequestedEventArgs e)
+        {
+            if (e.Name.IsEquivalentTo("LooseSprites/AquariumFish"))
+            {
+                switch (fishID) 
+                {
+
+                    case 937:
+                        e.LoadFromModFile<Texture2D>("assets/Chimaera.png", AssetLoadPriority.Medium);
+                        break;
+                    case 936:
+                        e.LoadFromModFile<Texture2D>("assets/Ocean Sunfish.png", AssetLoadPriority.Medium);
+                        break;
+                    default:
+                        break;
+                
+                }
+            }
+        }
+
+        //TODO make the sprite actually visible!
     }
 }
