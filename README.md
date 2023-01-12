@@ -8,7 +8,7 @@ Find the mod you would like to use, download the folder it comes in, and place i
 ### AutoQuarryMod
 A mod that automatically collects resources from the quarry and places them in the player's inventory every morning. Currently, this mod only collects stones from rocks and boulders, ore, and gems.
 
-### ExpandedOceans
+### ExpandedOcean
 A mod that adds some more fish to the game, ranging from your typical aquarium fish to fish it shouldn't even be possible to catch! Currently, this mod only has two fish.
 
 ### EnhancedWheelSpinGame
