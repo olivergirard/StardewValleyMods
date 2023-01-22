@@ -7,11 +7,15 @@ using Microsoft.Xna.Framework;
 using System;
 using System.IO;
 using StardewValley.Monsters;
+using StardewValley.Tools;
+using System.Runtime.CompilerServices;
 
 namespace ExpandedOcean
 {
     public class ModEntry : Mod
     {
+        public static IModHelper modHelper = null;
+
         public static bool fishDataAdded = false;
         public static bool objectDataAdded = false;
         public static bool locationDataAdded = false;
@@ -32,8 +36,16 @@ namespace ExpandedOcean
                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.SpecialFish))
             );
 
+            harmony.Patch(
+                original: AccessTools.Method(typeof(FishingRod), nameof(FishingRod.draw)),
+                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.DrawFish))
+            );
+
+
             helper.Events.Content.AssetRequested += AddFishData;
             helper.Events.Content.AssetRequested += ChangeFishSprite;
+
+            modHelper = helper;
         }
 
         /* Adds fish information to game files. */
@@ -57,7 +69,7 @@ namespace ExpandedOcean
                         //TODO sunfish last lines: /both/ /3/.2/.3/0
 
                         editor.Data.Add(936, "Ocean Sunfish/70/smooth/70/121/600 1900/summer fall/both/ /1/1/1/5");
-                        editor.Data.Add(937, "Chimaera/80/sinker/24/80/600 2600/spring summer fall/both/ /1/1/1/5");
+                        editor.Data.Add(937, "Chimaera/80/sinker/24/80/600 2600/spring summer winter/both/ /1/1/1/5");
                     });
 
                     fishDataAdded = true;
@@ -79,7 +91,7 @@ namespace ExpandedOcean
                         editor.Data.Add(936, "Ocean Sunfish/800/15/Fish -4/Ocean Sunfish/A very heavy and very bony fish./Day Night^Summer Fall");
 
                         //TODO chimaera is Night^Spring Summer
-                        editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Day Night^Spring Summer Fall");
+                        editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Day Night^Spring Summer Winter");
                     });
 
                     objectDataAdded = true;
@@ -107,8 +119,8 @@ namespace ExpandedOcean
 
                         //TODO remove chimaera from fallInfo
 
-                        string fallInfo = "129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1 936 -1 937 -1/";
-                        string winterInfo = "708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1/";
+                        string fallInfo = "129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1 936 -1 /";
+                        string winterInfo = "708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1 937 -1/";
 
                         string updatedBeach = forageInfo + springInfo + summerInfo + fallInfo + winterInfo + artifactData;
 
@@ -139,13 +151,14 @@ namespace ExpandedOcean
 
         public void ChangeFishSprite(object sender, AssetRequestedEventArgs e)
         {
-            if (e.Name.IsEquivalentTo("LooseSprites/AquariumFish"))
+
+            if (e.Name.IsEquivalentTo("Maps/springobjects"))
             {
                 switch (fishID) 
                 {
 
                     case 937:
-                        e.LoadFromModFile<Texture2D>("assets/Chimaera.png", AssetLoadPriority.Medium);
+                        e.LoadFromModFile<Texture2D>("assets/little guy.png", AssetLoadPriority.Medium);
                         break;
                     case 936:
                         e.LoadFromModFile<Texture2D>("assets/Ocean Sunfish.png", AssetLoadPriority.Medium);
@@ -157,6 +170,24 @@ namespace ExpandedOcean
             }
         }
 
-        //TODO make the sprite actually visible!
+        public static void DrawFish(SpriteBatch b)
+        {
+            Texture2D texture = null;
+
+            switch (fishID) 
+            {
+                case 936:
+                    texture = modHelper.ModContent.Load<Texture2D>("assets/Ocean Sunfish.png");
+                    break;
+                case 937:
+                    texture = modHelper.ModContent.Load<Texture2D>("assets/little guy.png");
+                    break;
+                default:
+                    return;
+            
+            }
+
+            b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, Game1.player.Position + new Vector2(0f, -56f)), Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, fishID, 16, 16), Color.White, ((float)Math.PI * 3f / 4f), new Vector2(8f, 8f), 3f, SpriteEffects.None, (float)Game1.player.getStandingY() / 10000f + 0.002f + 0.06f);
+        }
     }
 }
