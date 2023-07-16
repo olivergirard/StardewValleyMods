@@ -5,17 +5,12 @@ using HarmonyLib;
 using StardewValley;
 using Microsoft.Xna.Framework;
 using System;
-using System.IO;
-using StardewValley.Monsters;
-using StardewValley.Tools;
-using System.Runtime.CompilerServices;
-using StardewValley.Menus;
 
 namespace ExpandedOcean
 {
     public class ModEntry : Mod
     {
-        public static IModHelper modHelper = null;
+        public static IModContentHelper modContentHelper = null;
 
         public static bool fishDataAdded = false;
         public static bool objectDataAdded = false;
@@ -24,12 +19,14 @@ namespace ExpandedOcean
         public static int myIndexOfAnimation = 0;
         public static float myRotation = 0;
         public static Vector2 myPosition = new Vector2(514f, 306f);
-        public static int fishID;
-
         public static int animationTimer = 65;
         public static bool isDarting = false;
         public static float targetRotation = 0;
         public static float dartingTimer = 0;
+
+        public static int fishID;
+        public static Texture2D fishTexture;
+        public static StardewValley.Object fishObject;
 
         public override void Entry(IModHelper helper)
         {
@@ -44,19 +41,14 @@ namespace ExpandedOcean
             );
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(StardewValley.Menus.Fish), nameof(StardewValley.Menus.Fish.draw)),
-                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.DrawFish))
+                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawWhenHeld)),
+                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.DrawWhenHeld))
             );
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StardewValley.Menus.Fish), nameof(StardewValley.Menus.Fish.Update)),
-                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.InitializeValues))
-            );
-
 
             helper.Events.Content.AssetRequested += AddFishData;
 
-            modHelper = helper;
+            modContentHelper = helper.ModContent;
+
         }
 
         /* Adds fish information to game files. */
@@ -127,11 +119,10 @@ namespace ExpandedOcean
 
                         string springInfo = "129 -1 131 -1 147 -1 148 -1 152 -1 708 -1 267 -1 937 -1/";
                         string summerInfo = "128 -1 130 -1 146 -1 149 -1 150 -1 152 -1 155 -1 708 -1 701 -1 267 -1 937 -1 936 -1/";
+                        string fallInfo = "129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1 936 -1/";
 
-                        //TODO remove chimaera from fallInfo
-
-                        string fallInfo = "129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1 936 -1 /";
-                        string winterInfo = "708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1 937 -1/";
+                        //TODO remove Chimaera from winterInfo //add: "708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1 "
+                        string winterInfo = "937 -1/";
 
                         string updatedBeach = forageInfo + springInfo + summerInfo + fallInfo + winterInfo + artifactData;
 
@@ -141,171 +132,56 @@ namespace ExpandedOcean
                     locationDataAdded = true;
                 }
             }
+
         }
 
-        /* Determines if the fish accessed is one of the new fish added. */
+        /* Determines if the fish accessed is one of the new fish added. Sets the object in question to the fish. */
 
         public static StardewValley.Object SpecialFish(StardewValley.Object result)
         {
+
             if (result.Name.Equals("Chimaera"))
             {
                 fishID = 937;
-                return new StardewValley.Object(937, 1);
-            }
-            else if (result.Name.Equals("Ocean Sunfish"))
-            {
-                fishID = 936;
-                return new StardewValley.Object(936, 1);
+                fishTexture = modContentHelper.Load<Texture2D>("assets/little guy.png");
+                fishObject = new StardewValley.Object(937, 1);
+                return fishObject;
             }
 
             return result;
         }
 
-        /* Determines whether the base game code or the modified base game code should be run. */
+        /* Draws the fish when it is held. Used so that the objectSpriteSheet may be set. */
 
-        public static bool InitializeValues(GameTime time)
+        public static bool DrawWhenHeld(SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
         {
-            string data = null;
-            if (fishID == 936)
+
+            if (f.ActiveObject.ParentSheetIndex == 937)
             {
-                data = "Ocean Sunfish/70/smooth/70/121/600 1900/summer fall/both/ /1/1/1/5";
-                string[] rawData = data.Split('/');
-                Update(time, rawData);
-            }
-            else if (fishID == 937)
-            {
-                data = "Chimaera/80/sinker/24/80/600 2600/spring summer winter/both/ /1/1/1/5";
-                string[] rawData = data.Split('/');
-                Update(time, rawData);
-            }
-            else
-            {
+                
+                Rectangle rectangle = new Rectangle(0, 0, 16, 16);
+
+                spriteBatch.Draw(fishTexture, objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
+                //spriteBatch.Draw(fishTexture, objectPosition + new Vector2(32f, 32f), rectangle, Color.White, 0f, new Vector2(32f, 32f), 4f + Math.Abs(Game1.starCropShimmerPause) / 8f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
+                
+                if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
+                {
+                    Game1.starCropShimmerPause += 0.04f;
+                    if (Game1.starCropShimmerPause >= 0.8f)
+                    {
+                        Game1.starCropShimmerPause = -0.8f;
+                    }
+                }
+
                 return true;
             }
+
 
             return false;
         }
 
-        /* Performs the same functions as the code from base game, now with obtainable variables. */
-
-        public static void Update(GameTime time, string[] rawData)
-        {
-
-            float chanceToDart = Convert.ToInt32(rawData[1]);
-            float dartingRandomness = Convert.ToInt32(rawData[2]);
-            float dartingDuration = Convert.ToInt32(rawData[4]);
-            float turnFrequency = Convert.ToInt32(rawData[5]);
-            float turnSpeed = Convert.ToInt32(rawData[6]);
-            float turnIntensity = Convert.ToInt32(rawData[7]);
-            float minSpeed = Convert.ToInt32(rawData[8]);
-            float maxSpeed = Convert.ToInt32(rawData[9]);
-            float speedChangeFrequency = Convert.ToInt32(rawData[10]);
-
-            float targetSpeed = minSpeed / 50f;
-            float currentSpeed = 0;
-            Rectangle fishingField = new Rectangle(0, 0, 1028, 612);
-
-            animationTimer -= time.ElapsedGameTime.Milliseconds;
-            if (animationTimer <= 0)
-            {
-                animationTimer = 65 - (int)(currentSpeed * 10f);
-                myIndexOfAnimation = (myIndexOfAnimation + 1) % 8;
-            }
-            if (!isDarting && Game1.random.NextDouble() < (double)(chanceToDart / 10000f))
-            {
-                myRotation += (float)((double)Game1.random.Next(-(int)dartingRandomness, (int)dartingRandomness) * Math.PI / 100.0);
-                targetSpeed = myRotation;
-                dartingTimer = dartingDuration * 10f + (float)Game1.random.Next(-(int)dartingDuration, (int)dartingDuration) * 0.1f;
-                isDarting = true;
-            }
-            if (dartingTimer > 0f)
-            {
-                dartingTimer -= time.ElapsedGameTime.Milliseconds;
-                if (dartingTimer <= 0f && isDarting)
-                {
-                    isDarting = false;
-                    dartingTimer = dartingDuration * 10f + (float)Game1.random.Next(-(int)dartingDuration, (int)dartingDuration) * 0.1f;
-                }
-            }
-            if (Game1.random.NextDouble() < (double)(turnFrequency / 10000f))
-            {
-                targetRotation = (float)((double)((float)Game1.random.Next((int)(0f - turnIntensity), (int)turnIntensity) / 100f) * Math.PI);
-            }
-            if (Game1.random.NextDouble() < (double)(speedChangeFrequency / 10000f))
-            {
-                targetSpeed = (int)((float)Game1.random.Next((int)minSpeed, (int)maxSpeed) / 20f);
-            }
-            if (Math.Abs(myRotation - targetRotation) > Math.Abs(targetRotation / (100f - turnSpeed)))
-            {
-                myRotation += targetRotation / (100f - turnSpeed);
-            }
-
-            myRotation %= (float)Math.PI * 2f;
-            currentSpeed += (targetSpeed - currentSpeed) / 10f;
-            currentSpeed = Math.Min(maxSpeed / 20f, currentSpeed);
-            currentSpeed = Math.Max(minSpeed / 20f, currentSpeed);
-            myPosition.X += (float)((double)currentSpeed * Math.Cos(myRotation));
-            int wallsHit = 0;
-
-            if (!fishingField.Contains(new Rectangle((int)myPosition.X - 32, (int)myPosition.Y - 32, 64, 64)))
-            {
-                Vector2 cartesian = new Vector2(currentSpeed * (float)Math.Cos(myRotation), currentSpeed * (float)Math.Sin(myRotation));
-                cartesian.X = 0f - cartesian.X;
-                myRotation = (float)Math.Atan(cartesian.Y / cartesian.X);
-                if (cartesian.X < 0f)
-                {
-                    myRotation += (float)Math.PI;
-                }
-                else if (cartesian.Y < 0f)
-                {
-                    myRotation += (float)Math.PI / 2f;
-                }
-                myPosition.X += (float)((double)currentSpeed * Math.Cos(myRotation));
-                wallsHit++;
-            }
-            myPosition.Y += (float)((double)currentSpeed * Math.Sin(myRotation));
-            if (!fishingField.Contains(new Rectangle((int)myPosition.X - 32, (int)myPosition.Y - 32, 64, 64)))
-            {
-                Vector2 cartesian2 = new Vector2(currentSpeed * (float)Math.Cos(myRotation), currentSpeed * (float)Math.Sin(myRotation));
-                cartesian2.Y = 0f - cartesian2.Y;
-                myRotation = (float)Math.Atan(cartesian2.Y / cartesian2.X);
-                if (cartesian2.X < 0f)
-                {
-                    myRotation += (float)Math.PI;
-                }
-                else if (cartesian2.Y > 0f)
-                {
-                    myRotation += (float)Math.PI / 2f;
-                }
-                myPosition.Y += (float)((double)currentSpeed * Math.Sin(myRotation));
-                wallsHit++;
-            }
-            if (wallsHit >= 2)
-            {
-                Vector2 targetLocation = Utility.getVelocityTowardPoint(new Point((int)myPosition.X, (int)myPosition.Y), new Vector2(514f, 306f), currentSpeed);
-                myRotation = (float)Math.Atan(targetLocation.Y / targetLocation.X);
-                if (targetLocation.X < 0f)
-                {
-                    myRotation += (float)Math.PI;
-                }
-                else if (targetLocation.Y < 0f)
-                {
-                    myRotation += (float)Math.PI / 2f;
-                }
-                myPosition.X += (float)((double)currentSpeed * Math.Cos(myRotation));
-                myPosition.Y += (float)((double)currentSpeed * Math.Sin(myRotation));
-            }
-            else if (wallsHit == 1)
-            {
-                targetRotation = myRotation;
-            }
-        }
-
-        /* Draws the fish in the player's hand after catching it. */
-
-        public static void DrawFish(SpriteBatch b, Vector2 positionOfFishingField)
-        {
-            b.Draw(Game1.mouseCursors, myPosition + positionOfFishingField, new Rectangle(561, 1846 + myIndexOfAnimation * 16, 16, 16), Color.White, myRotation + (float)Math.PI / 2f, new Vector2(8f, 8f), 4f, SpriteEffects.None, 0.5f);
-        }
+        //TODO fish needs to be drawn immediately after catch and during eating animation.
+        //TODO fish needs to be drawn in collection menu
+        //TODO fish needs to be drawn in inventory
     }
 }

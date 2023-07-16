@@ -6,6 +6,8 @@ using StardewValley;
 
 namespace AutoQuarry
 {
+
+    //TODO the items that get added into the player's inventory are not visible when the player holds them.
     public class ModEntry : Mod
     {
         
@@ -254,6 +256,7 @@ namespace AutoQuarry
                 Game1.player.addItemByMenuIfNecessary(new StardewValley.Object(709, hardwoodCount, false, -1, 0));
 
             }
+
         }
 
         /* Generates the amount of wood the player will receive after tree removal. */
