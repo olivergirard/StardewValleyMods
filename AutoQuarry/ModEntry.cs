@@ -7,7 +7,7 @@ using StardewValley;
 namespace AutoQuarry
 {
 
-    //TODO the items that get added into the player's inventory are not visible when the player holds them.
+    //TODO the items that get added into the player's inventory are not visible when the player holds them. remove fish mod before you start debugging this beeswax
     public class ModEntry : Mod
     {
         
