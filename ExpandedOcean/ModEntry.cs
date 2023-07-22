@@ -5,18 +5,15 @@ using HarmonyLib;
 using StardewValley;
 using Microsoft.Xna.Framework;
 using System;
-using StardewValley.Menus;
-using StardewValley.Tools;
-using System.Drawing;
-using xTile.Dimensions;
-using System.Runtime.CompilerServices;
-using System.Reflection.Metadata.Ecma335;
+using System.IO;
+using System.Reflection;
 
 namespace ExpandedOcean
 {
     public class ModEntry : Mod
     {
         public static IModContentHelper modContentHelper = null;
+        public static BindingFlags allMethods = BindingFlags.NonPublic;
 
         public static bool fishDataAdded = false;
         public static bool objectDataAdded = false;
@@ -31,7 +28,7 @@ namespace ExpandedOcean
         public static float dartingTimer = 0;
 
         public static int fishID;
-        public static Texture2D fishTexture;
+        public static string textureName;
         public static StardewValley.Object fishObject;
 
         public override void Entry(IModHelper helper)
@@ -52,12 +49,24 @@ namespace ExpandedOcean
             );
 
             harmony.Patch(
-                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawInMenu), new Type[] {typeof(SpriteBatch) , typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Microsoft.Xna.Framework.Color), typeof(bool)}),
+                original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawInMenu), new Type[] { typeof(SpriteBatch), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(StackDrawType), typeof(Microsoft.Xna.Framework.Color), typeof(bool) }),
                 prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.DrawInInventoryMenu))
             );
 
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.showEatingItem)),
+                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.Eat))
+            );
+
+            harmony.Patch(
+                
+                original: typeof(TemporaryAnimatedSprite).GetMethod("loadTexture", BindingFlags.Instance | BindingFlags.NonPublic),
+                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.LoadTexture))
+            );
 
             helper.Events.Content.AssetRequested += AddFishData;
+
+            helper.Events.GameLoop.DayStarted += Debug;
 
             modContentHelper = helper.ModContent;
 
@@ -107,6 +116,9 @@ namespace ExpandedOcean
 
                         //TODO chimaera is Night^Spring Summer                   
                         editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Day Night^Spring Summer Winter");
+
+                        //TODO they must be excluding things like Trash and Driftwood from the collections page? so remove this
+                        editor.Data.Add(938, "Mulch/0/500/Fish -20/Mulch/Help! I can't stop eating mulch!/Day Night^Spring Summer Fall Winter");
                     });
 
                     objectDataAdded = true;
@@ -148,7 +160,7 @@ namespace ExpandedOcean
 
         /* Determines if the fish accessed is one of the new fish added. Sets the object in question to the fish. */
 
-        //TODO either add onto this method or make a new method (depending on what the game code uses) to accomodate trash
+        //TODO make sure fish and trash catching noises are good. also add trash to trash cans
 
         public static StardewValley.Object SpecialFish(StardewValley.Object result)
         {
@@ -156,8 +168,12 @@ namespace ExpandedOcean
             if (result.Name.Equals("Chimaera"))
             {
                 fishID = 937;
-                fishTexture = modContentHelper.Load<Texture2D>("assets/Chimaera.png");
-                fishObject = new StardewValley.Object(937, 1);
+                fishObject = new StardewValley.Object(fishID, 1);
+                return fishObject;
+            } else if (result.Name.Equals("Mulch"))
+            {
+                fishID = 938;
+                fishObject = new StardewValley.Object(fishID, 1);
                 return fishObject;
             }
 
@@ -168,24 +184,26 @@ namespace ExpandedOcean
 
         public static bool DrawWhenHeld(SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
         {
+            Microsoft.Xna.Framework.Rectangle rectangle = new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16);
 
             if (f.ActiveObject.ParentSheetIndex == 937)
             {
-                
-                Microsoft.Xna.Framework.Rectangle rectangle = new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16);
-
-                spriteBatch.Draw(fishTexture, objectPosition, rectangle, Microsoft.Xna.Framework.Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
-                
-                if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
-                {
-                    Game1.starCropShimmerPause += 0.04f;
-                    if (Game1.starCropShimmerPause >= 0.8f)
-                    {
-                        Game1.starCropShimmerPause = -0.8f;
-                    }
-                }
-
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Chimaera.png"), objectPosition, rectangle, Microsoft.Xna.Framework.Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
+            } else if (f.ActiveObject.ParentSheetIndex == 938)
+            {
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Mulch.png"), objectPosition, rectangle, Microsoft.Xna.Framework.Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
+            } else
+            {
                 return true;
+            }
+
+            if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
+            {
+                Game1.starCropShimmerPause += 0.04f;
+                if (Game1.starCropShimmerPause >= 0.8f)
+                {
+                    Game1.starCropShimmerPause = -0.8f;
+                }
             }
 
             return false;
@@ -196,34 +214,137 @@ namespace ExpandedOcean
         public static bool DrawInInventoryMenu(StardewValley.Object __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Microsoft.Xna.Framework.Color color, bool drawShadow)
         {
 
-            /* If the fish is a Chimaera. */
             if (__instance.ParentSheetIndex == 937)
             {
                 spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Chimaera.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
-
-                /* "Draws" the number of items that are in a stack. */
-                bool shouldDrawStackNumber = ((drawStackNumber == StackDrawType.Draw && 999 > 1 && __instance.Stack > 1) || drawStackNumber == StackDrawType.Draw_OneInclusive) && (double)scaleSize > 0.3 && __instance.Stack != int.MaxValue;
-                if (shouldDrawStackNumber)
-                {
-                    Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2((float)(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)) + 3f * scaleSize, 64f - 18f * scaleSize + 1f), 3f * scaleSize, 1f, color);
-                }
-
-                /* Draws the quality star. */
-                if (drawStackNumber != 0 && (int)__instance.Quality > 0)
-                {
-                    Microsoft.Xna.Framework.Rectangle quality_rect = ((int)__instance.Quality < 4) ? new Microsoft.Xna.Framework.Rectangle(338 + ((int)__instance.Quality - 1) * 8, 400, 8, 8) : new Microsoft.Xna.Framework.Rectangle(346, 392, 8, 8);
-                    Texture2D quality_sheet = Game1.mouseCursors;
-                    float yOffset = ((int)__instance.Quality < 4) ? 0f : (((float)Math.Cos((double)Game1.currentGameTime.TotalGameTime.Milliseconds * Math.PI / 512.0) + 1f) * 0.05f);
-                    spriteBatch.Draw(quality_sheet, location + new Vector2(12f, 52f + yOffset), quality_rect, color * transparency, 0f, new Vector2(4f, 4f), 3f * scaleSize * (1f + yOffset), SpriteEffects.None, layerDepth);
-                }
-
+            } else if (__instance.ParentSheetIndex == 938)
+            {
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Mulch.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
+            } else
+            {
+                //true: run original logic
                 return true;
+            }
+
+            /* "Draws" the number of items that are in a stack. */
+            bool shouldDrawStackNumber = ((drawStackNumber == StackDrawType.Draw && 999 > 1 && __instance.Stack > 1) || drawStackNumber == StackDrawType.Draw_OneInclusive) && (double)scaleSize > 0.3 && __instance.Stack != int.MaxValue;
+            if (shouldDrawStackNumber)
+            {
+                Utility.drawTinyDigits(__instance.Stack, spriteBatch, location + new Vector2((float)(64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize)) + 3f * scaleSize, 64f - 18f * scaleSize + 1f), 3f * scaleSize, 1f, color);
+            }
+
+            /* Draws the quality star. */
+            if (drawStackNumber != 0 && (int)__instance.Quality > 0)
+            {
+                Microsoft.Xna.Framework.Rectangle quality_rect = ((int)__instance.Quality < 4) ? new Microsoft.Xna.Framework.Rectangle(338 + ((int)__instance.Quality - 1) * 8, 400, 8, 8) : new Microsoft.Xna.Framework.Rectangle(346, 392, 8, 8);
+                Texture2D quality_sheet = Game1.mouseCursors;
+                float yOffset = ((int)__instance.Quality < 4) ? 0f : (((float)Math.Cos((double)Game1.currentGameTime.TotalGameTime.Milliseconds * Math.PI / 512.0) + 1f) * 0.05f);
+                spriteBatch.Draw(quality_sheet, location + new Vector2(12f, 52f + yOffset), quality_rect, color * transparency, 0f, new Vector2(4f, 4f), 3f * scaleSize * (1f + yOffset), SpriteEffects.None, layerDepth);
             }
 
             return false;
         }
 
+        public static bool Eat(Farmer who)
+        {
+            //optimize or whatever
+            TemporaryAnimatedSprite tempSprite2 = null;
+
+            if ((who.itemToEat != null) && (who.itemToEat.ParentSheetIndex == 938))
+            {
+                //lol
+                textureName = "assets/Mulch.png";
+
+                switch (who.FarmerSprite.currentAnimationIndex)
+                {
+                    case 1:
+
+                        if (!who.IsLocalPlayer || who.itemToEat == null || !(who.itemToEat is StardewValley.Object)){
+                            tempSprite2 =  new TemporaryAnimatedSprite(textureName, new Rectangle(0, 0, 16, 16), 254f, 1, 0, who.Position + new Vector2(-21f, -112f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f);
+                        }
+                        break;
+                    case 2:
+                        /*if (who.IsLocalPlayer && who.itemToEat != null && who.itemToEat is StardewValley.Object && Utility.IsNormalObjectAtParentSheetIndex(who.itemToEat, 434))
+                        {
+
+                            //girl what in the mulch does this even do
+                            tempSprite2 = new TemporaryAnimatedSprite("LooseSprites\\Cursors", new Microsoft.Xna.Framework.Rectangle(368, 16, 16, 16), 81.25f, 8, 0, who.Position + new Vector2(-21f, -108f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, -0.01f, 0f, 0f)
+                            {
+                                motion = new Vector2(0.8f, -11f),
+                                acceleration = new Vector2(0f, 0.5f)
+                            };
+                            break;
+                        }*/
+                        if (Game1.currentLocation == who.currentLocation)
+                        {
+                            Game1.playSound("dwop");
+                        }
+                        tempSprite2 = new TemporaryAnimatedSprite(textureName, new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16), 650f, 1, 0, who.Position + new Vector2(-21f, -108f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, -0.01f, 0f, 0f)
+                        {
+                            motion = new Vector2(0.8f, -11f),
+                            acceleration = new Vector2(0f, 0.5f)
+                        };
+                        break;
+                    case 3:
+                        who.yJumpVelocity = 6f;
+                        who.yJumpOffset = 1;
+                        break;
+                    case 4:
+                        {
+                            if (Game1.currentLocation == who.currentLocation && who.ShouldHandleAnimationSound())
+                            {
+                                Game1.playSound("eat");
+                            }
+                            for (int i = 0; i < 8; i++)
+                            {
+                                Rectangle r = new Rectangle(0, 0, 16, 16);
+                                r.X += 8;
+                                r.Y += 8;
+                                r.Width = 4;
+                                r.Height = 4;
+                                tempSprite2 = new TemporaryAnimatedSprite(textureName, r, 400f, 1, 0, who.Position + new Vector2(24f, -48f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f)
+                                {
+                                    motion = new Vector2((float)Game1.random.Next(-30, 31) / 10f, Game1.random.Next(-6, -3)),
+                                    acceleration = new Vector2(0f, 0.5f)
+                                };
+                                who.currentLocation.temporarySprites.Add(tempSprite2);
+                            }
+                            break;
+                        }
+                    default:
+                        who.freezePause = 0;
+                        break;
+                }
+                if (tempSprite2 != null)
+                {
+                    who.currentLocation.temporarySprites.Add(tempSprite2);
+                }
+
+                return false;
+            } else
+            {
+                return true;
+            }
+        }
+
+        public static bool LoadTexture(TemporaryAnimatedSprite __instance)
+        {
+            if (textureName == "assets/Mulch.png")
+            {
+                __instance.texture = modContentHelper.Load<Texture2D>(textureName);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
         //TODO fish needs to be drawn immediately after catch and during eating animation.
         //TODO fish needs to be drawn in collection menu
+
+        private void Debug(object sender, DayStartedEventArgs e)
+        {
+            Game1.player.addItemToInventory(new StardewValley.Object(938, 1));
+        }
     }
 }
