@@ -6,6 +6,13 @@ using StardewValley;
 using Microsoft.Xna.Framework;
 using System;
 using System.Reflection;
+using System.Formats.Asn1;
+using System.IO;
+using System.Runtime.CompilerServices;
+using StardewValley.Tools;
+using System.Collections.Generic;
+using StardewValley.Network;
+using System.Reflection.Metadata;
 
 namespace ExpandedOcean
 {
@@ -50,6 +57,10 @@ namespace ExpandedOcean
             harmony.Patch(
                 original: AccessTools.Method(typeof(Farmer), nameof(Farmer.showEatingItem)),
                 prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.Eat))
+            );
+            harmony.Patch(
+                original: typeof(StardewValley.Tools.FishingRod).GetMethod("doPullFishFromWater", BindingFlags.Instance | BindingFlags.NonPublic),
+                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.PullFromWater))
             );
 
             harmony.Patch(
@@ -342,6 +353,24 @@ namespace ExpandedOcean
         //TODO trash needs to be excluded from the collection menu
         //TODO make sure fish and trash catching noises are good
         //TODO ensure trash is in trash cans
+
+        public static void PullFromWater(List<TemporaryAnimatedSprite> ___animations, NetPosition ___bobber)
+        {
+            /* Modify this for users facing different directions -- detailed more in original doPullFishFromWater method. */
+            ___animations.Remove(); //TODO add what to remove here
+            Rectangle spriteRectangle = Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, fishID, 16, 16);
+
+            float distance2 = Vector2.Distance(___bobber, Game1.player.Position);
+            float gravity2 = 0.001f;
+            float height2 = 128f - (Game1.player.Position.Y - ___bobber.Y + 10f);
+            double angle2 = 1.1423973285781066;
+
+            float yVelocity2 = (float)((double)(distance2 * gravity2) * Math.Tan(angle2) / Math.Sqrt((double)(2f * distance2 * gravity2) * Math.Tan(angle2) - (double)(2f * gravity2 * height2)));
+            float xVelocity2 = (float)((double)yVelocity2 * (1.0 / Math.Tan(angle2)));
+            float animationInterval = distance2 / xVelocity2;
+
+            ___animations.Add(new TemporaryAnimatedSprite(textureName, spriteRectangle, animationInterval, 1, 0, ___bobber, flicker: false, flipped: false, ___bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f));
+        }
 
         /* For debugging only! */
         private void Debug(object sender, DayStartedEventArgs e)
