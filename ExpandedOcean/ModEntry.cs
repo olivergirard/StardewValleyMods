@@ -6,13 +6,9 @@ using StardewValley;
 using Microsoft.Xna.Framework;
 using System;
 using System.Reflection;
-using System.Formats.Asn1;
 using System.IO;
-using System.Runtime.CompilerServices;
 using StardewValley.Tools;
-using System.Collections.Generic;
-using StardewValley.Network;
-using System.Reflection.Metadata;
+using StardewValley.ItemTypeDefinitions;
 
 namespace ExpandedOcean
 {
@@ -24,7 +20,6 @@ namespace ExpandedOcean
         /* Used to ensure data is not added more than once. */
         public static bool fishDataAdded = false;
         public static bool objectDataAdded = false;
-        public static bool locationDataAdded = false;
 
         public static int fishID;
         public static string textureName;
@@ -58,15 +53,20 @@ namespace ExpandedOcean
                 original: AccessTools.Method(typeof(Farmer), nameof(Farmer.showEatingItem)),
                 prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.Eat))
             );
+
             harmony.Patch(
                 original: typeof(StardewValley.Tools.FishingRod).GetMethod("doPullFishFromWater", BindingFlags.Instance | BindingFlags.NonPublic),
-                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.PullFromWater))
+                prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.DoPullFromWater))
             );
 
             harmony.Patch(
-                
                 original: typeof(TemporaryAnimatedSprite).GetMethod("loadTexture", BindingFlags.Instance | BindingFlags.NonPublic),
                 prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.LoadTexture))
+            );
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StardewValley.Tools.FishingRod), nameof(StardewValley.Tools.FishingRod.draw)),
+                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.FishFrame))
             );
 
             helper.Events.Content.AssetRequested += AddFishData;
@@ -77,104 +77,78 @@ namespace ExpandedOcean
         }
 
         /* Adds fish information to game files. */
-
         private void AddFishData(object sender, AssetRequestedEventArgs e)
         {
-
             if (fishDataAdded == false)
             {
                 if (e.NameWithoutLocale.IsEquivalentTo("Data/Fish"))
                 {
                     e.Edit(asset =>
                     {
-                        var editor = asset.AsDictionary<int, string>();
+                        var editor = asset.AsDictionary<string, string>();
 
-                        /* Any key above 935 should work as of v1.5 update.
-                         * Format: Name/Difficulty/Behavior/MinimumSize/MaximumSize/StartTime EndTime/Seasons/RainyOrSunnyWeather/UNUSED/MinimumDepth/SpawnMultiplier/DepthMultiplier/MinimumLevelNeeded
-                         * More info here: https://stardewcommunitywiki.com/Modding:Fish_data */
+                        //editor.Data.Add("936", "Ocean Sunfish/70/smooth/70/121/600 1900/spring fall/both/690 .4 685 .1/3/.2/.3/5/true"); //TODO fix back to summer
+                        editor.Data.Add("936", "Ocean Sunfish/30/mixed/5/15/600 1900/spring summer/sunny/683 .2/1/.45/.1/0/true");
 
-                        //TODO change chimaera time back to 1900 2600. seasons changed from spring summer for chimaera
-
-                        editor.Data.Add(936, "Ocean Sunfish/70/smooth/70/121/600 1900/summer fall/both/ /3/.2/.3/5");
-                        editor.Data.Add(937, "Chimaera/80/sinker/24/80/600 2600/spring summer winter/both/ /1/1/1/7");
                     });
 
                     fishDataAdded = true;
-
                 }
             }
 
             if (objectDataAdded == false)
             {
-                if (e.NameWithoutLocale.IsEquivalentTo("Data/ObjectInformation"))
+                if (e.NameWithoutLocale.IsEquivalentTo("Data/Objects"))
                 {
                     e.Edit(asset =>
                     {
-                        var editor = asset.AsDictionary<int, string>();
+                        var editor = asset.AsDictionary<string, StardewValley.GameData.Objects.ObjectData>();
 
-                        /* Format: Name/Price/Edibility/TypeAndCategory/DisplayName/Description/TimesAvailable^SeasonsAvailable
-                         * More info here: https://stardewcommunitywiki.com/Modding:Object_data 
-                         * Trash goes under "Fish -20" */
+                        StardewValley.GameData.Objects.ObjectData oceanSunfish = new StardewValley.GameData.Objects.ObjectData
+                        {
+                            Name = "Ocean Sunfish",
+                            DisplayName = "Ocean Sunfish",
+                            Description = "A very heavy and very bony fish.",
+                            Type = "Fish",
+                            Category = -4,
+                            Price = 800,
+                            Texture = "C:\\Users\\azure\\Desktop\\files\\repos\\StardewValleyMods\\ExpandedOcean\\assets\\Ocean Sunfish", //TODO i wonder if i can leave this null...
+                            SpriteIndex = 936,
+                            Edibility = 15,
+                            IsDrink = false,
+                            Buffs = null,
+                            GeodeDropsDefaultItems = false,
+                            GeodeDrops = null,
+                            ArtifactSpotChances = null,
+                            ExcludeFromFishingCollection = false,
+                            ExcludeFromShippingCollection = false,
+                            ExcludeFromRandomSale = false,
+                            ContextTags = [
+                              "color_blue",
+                              "fish_pond",
+                              "fish_river", //TODO fish_ocean
+                              "season_fall",
+                              "season_spring" //TODO change back to season_summer
+                            ],
+                            CustomFields = null
+                        };
 
-                        editor.Data.Add(936, "Ocean Sunfish/800/15/Fish -4/Ocean Sunfish/A very heavy and very bony fish./Day Night^Summer Fall");
-
-                        //TODO chimaera is Night^Spring Summer                   
-                        editor.Data.Add(937, "Chimaera/500/2/Fish -4/Chimaera/A bottom-dwelling, deep-sea fish./Day Night^Spring Summer Winter");
-
-                        editor.Data.Add(938, "Mulch/0/500/Fish -20/Mulch/Help! I can't stop eating mulch!/Day Night^Spring Summer Fall Winter");
+                        editor.Data.Add("936", oceanSunfish);
                     });
 
                     objectDataAdded = true;
                 }
             }
-
-            if (locationDataAdded == false)
-            {
-                if (e.NameWithoutLocale.IsEquivalentTo("Data/Locations"))
-                {
-                    e.Edit(asset =>
-                    {
-                        var editor = asset.AsDictionary<string, string>();
-
-                        /* Original value: "372 .9 718 .1 719 .3 723 .3/372 .9 394 .5 718 .1 719 .3 723 .3/372 .9 718 .1 719 .3 723 .3/372 .4 392 .8 718 .05 719 .2 723 .2/129 -1 131 -1 147 -1 148 -1 152 -1 708 -1 267 -1/128 -1 130 -1 146 -1 149 -1 150 -1 152 -1 155 -1 708 -1 701 -1 267 -1/129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1/708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1/384 .08 589 .09 102 .15 390 .25 330 1"
-                         * More info here: https://stardewvalleywiki.com/Modding:Location_data */
-
-                        string forageInfo = "372 .9 718 .1 719 .3 723 .3/372 .9 394 .5 718 .1 719 .3 723 .3/372 .9 718 .1 719 .3 723 .3/372 .4 392 .8 718 .05 719 .2 723 .2/";
-                        string artifactData = "384 .08 589 .09 102 .15 390 .25 330 1";
-
-                        /* These are the only strings that need to be edited. */
-
-                        string springInfo = "129 -1 131 -1 147 -1 148 -1 152 -1 708 -1 267 -1 937 -1/";
-                        string summerInfo = "128 -1 130 -1 146 -1 149 -1 150 -1 152 -1 155 -1 708 -1 701 -1 267 -1 937 -1 936 -1/";
-                        string fallInfo = "129 -1 131 -1 148 -1 150 -1 152 -1 154 -1 155 -1 705 -1 701 -1 936 -1/";
-
-                        //TODO remove Chimaera from winterInfo //add: "708 -1 130 -1 131 -1 146 -1 147 -1 150 -1 151 -1 152 -1 154 -1 705 -1 "
-                        string winterInfo = "937 -1/";
-
-                        string updatedBeach = forageInfo + springInfo + summerInfo + fallInfo + winterInfo + artifactData;
-
-                        editor.Data["Beach"] = updatedBeach;
-                    });
-
-                    locationDataAdded = true;
-                }
-            }
         }
 
         /* Determines if the fish accessed is one of the new fish added. Sets the object in question to the fish. */
-
         public static StardewValley.Object SpecialFish(StardewValley.Object result)
         {
 
-            if (result.Name.Equals("Chimaera"))
+            if (result.Name.Equals("Ocean Sunfish"))
             {
-                fishID = 937;
-                fishObject = new StardewValley.Object(fishID, 1);
-                return fishObject;
-            } else if (result.Name.Equals("Mulch"))
-            {
-                fishID = 938;
-                fishObject = new StardewValley.Object(fishID, 1);
+                fishID = 936;
+                fishObject = new StardewValley.Object("936", 1, false, -1, 0);
                 return fishObject;
             }
 
@@ -182,46 +156,40 @@ namespace ExpandedOcean
         }
 
         /* Draws the fish when it is held, not immediately after catch. */
-
         public static bool DrawWhenHeld(SpriteBatch spriteBatch, Vector2 objectPosition, Farmer f)
         {
             Rectangle rectangle = new Rectangle(0, 0, 16, 16);
 
-            if (f.ActiveObject.ParentSheetIndex == 937)
+            if (f.ActiveObject.ParentSheetIndex == 936)
             {
-                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Chimaera.png"), objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
-            } else if (f.ActiveObject.ParentSheetIndex == 938)
-            {
-                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Mulch.png"), objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingY() + 3) / 10000f));
-            } else
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Ocean Sunfish.png"), objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingPosition().Y + 3) / 10000f));
+            }
+            else
             {
                 return true;
             }
 
-            if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
+            /*if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
             {
                 Game1.starCropShimmerPause += 0.04f;
                 if (Game1.starCropShimmerPause >= 0.8f)
                 {
                     Game1.starCropShimmerPause = -0.8f;
                 }
-            }
+            }*/ //Going to hope this isn't important...
 
             return false;
         }
 
         /* Draws the fish in the dock AND inventory menus... I think... */
-
         public static bool DrawInInventoryMenu(StardewValley.Object __instance, SpriteBatch spriteBatch, Vector2 location, float scaleSize, float transparency, float layerDepth, StackDrawType drawStackNumber, Color color, bool drawShadow)
         {
 
-            if (__instance.ParentSheetIndex == 937)
+            if (__instance.ParentSheetIndex == 936)
             {
-                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Chimaera.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
-            } else if (__instance.ParentSheetIndex == 938)
-            {
-                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Mulch.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
-            } else
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Ocean Sunfish.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
+            }
+            else
             {
                 return true;
             }
@@ -246,7 +214,6 @@ namespace ExpandedOcean
         }
 
         /* Selects the sprite to use for the eating animation. */
-
         public static bool Eat(Farmer who)
         {
             if (who.itemToEat != null)
@@ -255,12 +222,6 @@ namespace ExpandedOcean
                 {
                     case 936:
                         textureName = "assets/Ocean Sunfish.png";
-                        break;
-                    case 937:
-                        textureName = "assets/Chimaera.png";
-                        break;
-                    case 938:
-                        textureName = "assets/Mulch.png";
                         break;
                     default:
                         return true;
@@ -283,7 +244,7 @@ namespace ExpandedOcean
 
                     if (!who.IsLocalPlayer || who.itemToEat == null || !(who.itemToEat is StardewValley.Object))
                     {
-                        tempSprite2 = new TemporaryAnimatedSprite(textureName, new Rectangle(0, 0, 16, 16), 254f, 1, 0, who.Position + new Vector2(-21f, -112f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f);
+                        tempSprite2 = new TemporaryAnimatedSprite(textureName, new Rectangle(0, 0, 16, 16), 254f, 1, 0, who.Position + new Vector2(-21f, -112f), flicker: false, flipped: false, (float)who.getStandingPosition().Y / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f);
                     }
                     break;
                 case 2:
@@ -291,7 +252,7 @@ namespace ExpandedOcean
                     {
                         Game1.playSound("dwop");
                     }
-                    tempSprite2 = new TemporaryAnimatedSprite(textureName, new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16), 650f, 1, 0, who.Position + new Vector2(-21f, -108f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, -0.01f, 0f, 0f)
+                    tempSprite2 = new TemporaryAnimatedSprite(textureName, new Microsoft.Xna.Framework.Rectangle(0, 0, 16, 16), 650f, 1, 0, who.Position + new Vector2(-21f, -108f), flicker: false, flipped: false, (float)who.getStandingPosition().Y / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, -0.01f, 0f, 0f)
                     {
                         motion = new Vector2(0.8f, -11f),
                         acceleration = new Vector2(0f, 0.5f)
@@ -314,7 +275,7 @@ namespace ExpandedOcean
                             r.Y += 8;
                             r.Width = 4;
                             r.Height = 4;
-                            tempSprite2 = new TemporaryAnimatedSprite(textureName, r, 400f, 1, 0, who.Position + new Vector2(24f, -48f), flicker: false, flipped: false, (float)who.getStandingY() / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f)
+                            tempSprite2 = new TemporaryAnimatedSprite(textureName, r, 400f, 1, 0, who.Position + new Vector2(24f, -48f), flicker: false, flipped: false, (float)who.getStandingPosition().Y / 10000f + 0.01f, 0f, Microsoft.Xna.Framework.Color.White, 4f, 0f, 0f, 0f)
                             {
                                 motion = new Vector2((float)Game1.random.Next(-30, 31) / 10f, Game1.random.Next(-6, -3)),
                                 acceleration = new Vector2(0f, 0.5f)
@@ -337,7 +298,7 @@ namespace ExpandedOcean
 
         public static bool LoadTexture(TemporaryAnimatedSprite __instance)
         {
-            if (textureName == "assets/Mulch.png")
+            if (textureName == "assets/Ocean Sunfish.png")
             {
                 __instance.texture = modContentHelper.Load<Texture2D>(textureName);
                 return false;
@@ -348,34 +309,260 @@ namespace ExpandedOcean
             }
         }
 
-        //TODO fish needs to be drawn immediately after catch and during eating animation.
         //TODO fish needs to be drawn in collection menu
-        //TODO trash needs to be excluded from the collection menu
-        //TODO make sure fish and trash catching noises are good
-        //TODO ensure trash is in trash cans
 
-        public static void PullFromWater(List<TemporaryAnimatedSprite> ___animations, NetPosition ___bobber)
+        public static bool DoPullFromWater(BinaryReader argReader, FishingRod __instance)
         {
-            /* Modify this for users facing different directions -- detailed more in original doPullFishFromWater method. */
-            ___animations.Remove(); //TODO add what to remove here
-            Rectangle spriteRectangle = Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, fishID, 16, 16);
+            Farmer who = Game1.player;
+            string fishId = argReader.ReadString();
 
-            float distance2 = Vector2.Distance(___bobber, Game1.player.Position);
-            float gravity2 = 0.001f;
-            float height2 = 128f - (Game1.player.Position.Y - ___bobber.Y + 10f);
-            double angle2 = 1.1423973285781066;
+            //for debug
+            fishId = "936";
 
-            float yVelocity2 = (float)((double)(distance2 * gravity2) * Math.Tan(angle2) / Math.Sqrt((double)(2f * distance2 * gravity2) * Math.Tan(angle2) - (double)(2f * gravity2 * height2)));
-            float xVelocity2 = (float)((double)yVelocity2 * (1.0 / Math.Tan(angle2)));
-            float animationInterval = distance2 / xVelocity2;
+            int fishSize = argReader.ReadInt32();
+            int fishQuality = argReader.ReadInt32();
+            int fishDifficulty = argReader.ReadInt32();
+            bool treasureCaught = argReader.ReadBoolean();
+            bool wasPerfect = argReader.ReadBoolean();
+            bool fromFishPond = argReader.ReadBoolean();
+            string setFlagOnCatch = argReader.ReadString();
+            bool isBossFish = argReader.ReadBoolean();
+            int numCaught = argReader.ReadInt32();
+            __instance.treasureCaught = treasureCaught;
+            __instance.fishSize = fishSize;
+            __instance.fishQuality = fishQuality;
+            __instance.whichFish = ItemRegistry.GetMetadata(fishId);
+            __instance.fromFishPond = fromFishPond;
+            __instance.setFlagOnCatch = ((setFlagOnCatch != string.Empty) ? setFlagOnCatch : null);
+            __instance.numberOfFishCaught = numCaught;
 
-            ___animations.Add(new TemporaryAnimatedSprite(textureName, spriteRectangle, animationInterval, 1, 0, ___bobber, flicker: false, flipped: false, ___bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f));
+            Vector2 bobberTile = new Vector2(__instance.bobber.X / 64f, __instance.bobber.Y / 64f);
+
+            bool fishIsObject = __instance.whichFish.TypeIdentifier == "(O)";
+
+            if (fishQuality >= 2 && wasPerfect)
+            {
+                __instance.fishQuality = 4;
+            }
+            else if (fishQuality >= 1 && wasPerfect)
+            {
+                __instance.fishQuality = 2;
+            }
+
+            if (!Game1.isFestival() && who.IsLocalPlayer && !fromFishPond && fishIsObject)
+            {
+                int experience = Math.Max(1, (fishQuality + 1) * 3 + fishDifficulty / 3);
+                if (treasureCaught)
+                {
+                    experience += (int)((float)experience * 1.2f);
+                }
+                if (wasPerfect)
+                {
+                    experience += (int)((float)experience * 1.4f);
+                }
+                if (isBossFish)
+                {
+                    experience *= 5;
+                }
+                who.gainExperience(1, experience);
+            }
+
+            if (__instance.fishQuality < 0)
+            {
+                __instance.fishQuality = 0;
+            }
+
+            string sprite_sheet_name;
+            Rectangle sprite_rect;
+            if (fishIsObject)
+            {
+                if (fishId == "936")
+                {
+                    ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
+                    sprite_sheet_name = "C:\\Users\\azure\\Desktop\\files\\repos\\StardewValleyMods\\ExpandedOcean\\assets\\Ocean Sunfish";
+                    sprite_rect = new Rectangle(0, 0, 16, 16);
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
+            }
+
+            float t;
+            if (who.FacingDirection == 1 || who.FacingDirection == 3)
+            {
+                float distance = Vector2.Distance(__instance.bobber.Value, who.Position);
+                float gravity = 0.001f;
+                float height = 128f - (who.Position.Y - __instance.bobber.Y + 10f);
+                double angle = 1.1423973285781066;
+                float yVelocity = (float)((double)(distance * gravity) * Math.Tan(angle) / Math.Sqrt((double)(2f * distance * gravity) * Math.Tan(angle) - (double)(2f * gravity * height)));
+                if (float.IsNaN(yVelocity))
+                {
+                    yVelocity = 0.6f;
+                }
+                float xVelocity = (float)((double)yVelocity * (1.0 / Math.Tan(angle)));
+                t = distance / xVelocity;
+                __instance.animations.Add(new TemporaryAnimatedSprite(sprite_sheet_name, sprite_rect, t, 1, 0, __instance.bobber.Value, flicker: false, flipped: false, __instance.bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f)
+                {
+                    motion = new Vector2((float)((who.FacingDirection != 3) ? 1 : (-1)) * (0f - xVelocity), 0f - yVelocity),
+                    acceleration = new Vector2(0f, gravity),
+                    timeBasedMotion = true,
+                    endFunction = delegate
+                    {
+                        __instance.playerCaughtFishEndFunction(isBossFish);
+                    },
+                    endSound = "tinyWhip"
+                });
+                if (__instance.numberOfFishCaught > 1)
+                {
+                    for (int i = 1; i < __instance.numberOfFishCaught; i++)
+                    {
+                        distance = Vector2.Distance(__instance.bobber.Value, who.Position);
+                        gravity = 0.0008f - (float)i * 0.0001f;
+                        height = 128f - (who.Position.Y - __instance.bobber.Y + 10f);
+                        angle = 1.1423973285781066;
+                        yVelocity = (float)((double)(distance * gravity) * Math.Tan(angle) / Math.Sqrt((double)(2f * distance * gravity) * Math.Tan(angle) - (double)(2f * gravity * height)));
+                        if (float.IsNaN(yVelocity))
+                        {
+                            yVelocity = 0.6f;
+                        }
+                        xVelocity = (float)((double)yVelocity * (1.0 / Math.Tan(angle)));
+                        t = distance / xVelocity;
+                        __instance.animations.Add(new TemporaryAnimatedSprite(sprite_sheet_name, sprite_rect, t, 1, 0, __instance.bobber.Value, flicker: false, flipped: false, __instance.bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f)
+                        {
+                            motion = new Vector2((float)((who.FacingDirection != 3) ? 1 : (-1)) * (0f - xVelocity), 0f - yVelocity),
+                            acceleration = new Vector2(0f, gravity),
+                            timeBasedMotion = true,
+                            endSound = "fishSlap",
+                            Parent = who.currentLocation,
+                            delayBeforeAnimationStart = (i - 1) * 100
+                        });
+                    }
+                }
+            }
+            else
+            {
+                int playerStandingY = who.StandingPixel.Y;
+                float distance = __instance.bobber.Y - (float)(playerStandingY - 64);
+                float height = Math.Abs(distance + 256f + 32f);
+                if (who.FacingDirection == 0)
+                {
+                    height += 96f;
+                }
+                float gravity = 0.003f;
+                float velocity = (float)Math.Sqrt(2f * gravity * height);
+                t = (float)(Math.Sqrt(2f * (height - distance) / gravity) + (double)(velocity / gravity));
+                float xVelocity = 0f;
+                if (t != 0f)
+                {
+                    xVelocity = (who.Position.X - __instance.bobber.X) / t;
+                }
+                __instance.animations.Add(new TemporaryAnimatedSprite(sprite_sheet_name, sprite_rect, t, 1, 0, __instance.bobber.Value, flicker: false, flipped: false, __instance.bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f)
+                {
+                    motion = new Vector2(xVelocity, 0f - velocity),
+                    acceleration = new Vector2(0f, gravity),
+                    timeBasedMotion = true,
+                    endFunction = delegate
+                    {
+                        __instance.playerCaughtFishEndFunction(isBossFish);
+                    },
+                    endSound = "tinyWhip"
+                });
+                if (__instance.numberOfFishCaught > 1)
+                {
+                    for (int i = 1; i < __instance.numberOfFishCaught; i++)
+                    {
+                        distance = __instance.bobber.Y - (float)(playerStandingY - 64);
+                        height = Math.Abs(distance + 256f + 32f);
+                        if (who.FacingDirection == 0)
+                        {
+                            height += 96f;
+                        }
+                        gravity = 0.004f - (float)i * 0.0005f;
+                        velocity = (float)Math.Sqrt(2f * gravity * height);
+                        t = (float)(Math.Sqrt(2f * (height - distance) / gravity) + (double)(velocity / gravity));
+                        xVelocity = 0f;
+                        if (t != 0f)
+                        {
+                            xVelocity = (who.Position.X - __instance.bobber.X) / t;
+                        }
+                        __instance.animations.Add(new TemporaryAnimatedSprite(sprite_sheet_name, sprite_rect, t, 1, 0, new Vector2(__instance.bobber.X, __instance.bobber.Y), flicker: false, flipped: false, __instance.bobber.Y / 10000f, 0f, Color.White, 4f, 0f, 0f, 0f)
+                        {
+                            motion = new Vector2(xVelocity, 0f - velocity),
+                            acceleration = new Vector2(0f, gravity),
+                            timeBasedMotion = true,
+                            endSound = "fishSlap",
+                            Parent = who.currentLocation,
+                            delayBeforeAnimationStart = (i - 1) * 100
+                        });
+                    }
+                }
+            }
+            if (who.IsLocalPlayer)
+            {
+                who.currentLocation.playSound("pullItemFromWater", bobberTile);
+                who.currentLocation.playSound("dwop", bobberTile);
+            }
+            __instance.castedButBobberStillInAir = false;
+            __instance.pullingOutOfWater = true;
+            __instance.isFishing = false;
+            __instance.isReeling = false;
+            who.FarmerSprite.PauseForSingleAnimation = false;
+            switch (who.FacingDirection)
+            {
+                case 0:
+                    who.FarmerSprite.animateBackwardsOnce(299, t);
+                    break;
+                case 1:
+                    who.FarmerSprite.animateBackwardsOnce(300, t);
+                    break;
+                case 2:
+                    who.FarmerSprite.animateBackwardsOnce(301, t);
+                    break;
+                case 3:
+                    who.FarmerSprite.animateBackwardsOnce(302, t);
+                    break;
+            }
+
+            return false;
+        }
+
+        public static void FishFrame(SpriteBatch b, FishingRod __instance)
+        {
+            if (__instance.whichFish != null)
+            {
+                Farmer who = Game1.player;
+                bool fishIsObject = __instance.whichFish.TypeIdentifier == "(O)";
+                float yOffset = 4f * (float)Math.Round(Math.Sin(Game1.currentGameTime.TotalGameTime.TotalMilliseconds / 250.0), 2);
+                int playerStandingY = who.StandingPixel.Y;
+                ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
+
+                if (__instance.whichFish == ItemRegistry.GetMetadata("936"))
+                {
+                    Texture2D texture = modContentHelper.Load<Texture2D>("assets/Ocean Sunfish.png");
+                    Rectangle sourceRect = new Rectangle(0, 0, 16, 16);
+
+                    if (__instance.fishCaught == true)
+                    {
+                        /* This draws it in the little frame. */
+                        b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, who.Position + new Vector2(-124f, -284f + yOffset) + new Vector2(44f, 68f)), sourceRect, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, (float)playerStandingY / 10000f + 0.0001f + 0.06f);
+
+                        /* This draws it in the player's hand. */
+                        b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, who.Position + new Vector2(0f, -56f)), sourceRect, Color.White, (__instance.fishSize == -1 || __instance.whichFish.QualifiedItemId == "(O)800" || __instance.whichFish.QualifiedItemId == "(O)798" || __instance.whichFish.QualifiedItemId == "(O)149" || __instance.whichFish.QualifiedItemId == "(O)151") ? 0f : ((float)Math.PI * 3f / 4f), new Vector2(8f, 8f), 3f, SpriteEffects.None, (float)playerStandingY / 10000f + 0.002f + 0.06f);
+                    }
+
+                }
+            }
         }
 
         /* For debugging only! */
         private void Debug(object sender, DayStartedEventArgs e)
         {
-            Game1.player.addItemToInventory(new StardewValley.Object(938, 1));
+            Game1.player.addItemByMenuIfNecessary((Item)new StardewValley.Object("936", 1, false, -1, 0));
         }
     }
 }
