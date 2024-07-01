@@ -1,0 +1,11 @@
+{
+    "Name": "MapForEveryone",
+    "Author": "Oliver Girard",
+    "Version": "1.0.0",
+    "Description": "A mod that draws NPC mini-portraits on the map menu.",
+    "UniqueID": "OliverGirard.MapForEveryone",
+    "EntryDll": "MapForEveryone.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": ["GitHub:olivergirard/StardewValleyMods/MapForEveryone"]
+}
+

@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TackyTextures", "TackyTextu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnhancedWheelSpinGame", "EnhancedWheelSpinGame\EnhancedWheelSpinGame.csproj", "{17565EB4-B05E-477D-9FB5-29DA12D8ADC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpandedOcean", "ExpandedOcean\ExpandedOcean.csproj", "{3685A4D6-00D5-4D81-A844-EF4210E53B81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExpandedOcean", "ExpandedOcean\ExpandedOcean.csproj", "{3685A4D6-00D5-4D81-A844-EF4210E53B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapForEveryone", "MapForEveryone\MapForEveryone.csproj", "{01B4410C-9E5E-4C00-90E4-FCD5DC7CE605}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3685A4D6-00D5-4D81-A844-EF4210E53B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01B4410C-9E5E-4C00-90E4-FCD5DC7CE605}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01B4410C-9E5E-4C00-90E4-FCD5DC7CE605}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01B4410C-9E5E-4C00-90E4-FCD5DC7CE605}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01B4410C-9E5E-4C00-90E4-FCD5DC7CE605}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
