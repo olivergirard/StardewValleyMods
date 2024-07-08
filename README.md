@@ -5,7 +5,7 @@ My collection of Stardew Valley mods! I like to create mods that change game beh
 Find the mod you would like to use, download the folder it comes in, and place it in your Stardew Valley/Mods folder. If any other mods are needed for my mod to run, that information will be included in my mod's README.md file. My mods all currently work without the Content Patcher mod.
 
 ## Mods
-### AutoQuarryMod
+### AutoQuarry
 A mod that automatically collects resources from the quarry and places them in the player's inventory every morning. Currently, this mod only collects stones from rocks and boulders, ore, and gems. **This mod has not been updated for the 1.6 update, and may not function as intended.**
 
 ### EnhancedWheelSpinGame
