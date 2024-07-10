@@ -12,6 +12,8 @@ using StardewValley.ItemTypeDefinitions;
 
 namespace ExpandedOcean
 {
+    //TODO modify cropping on fish collection menu so silhouettes show up properly
+
     public class ModEntry : Mod
     {
         public static IModContentHelper modContentHelper = null;
@@ -27,7 +29,6 @@ namespace ExpandedOcean
 
         public override void Entry(IModHelper helper)
         {
-
             var harmony = new Harmony(this.ModManifest.UniqueID);
 
             /* Function used for adding fish data to the game. */
@@ -87,8 +88,8 @@ namespace ExpandedOcean
                     {
                         var editor = asset.AsDictionary<string, string>();
 
-                        //editor.Data.Add("936", "Ocean Sunfish/70/smooth/70/121/600 1900/spring fall/both/690 .4 685 .1/3/.2/.3/5/true"); //TODO fix back to summer
-                        editor.Data.Add("936", "Ocean Sunfish/30/mixed/5/15/600 1900/spring summer/sunny/683 .2/1/.45/.1/0/true");
+                        editor.Data.Add("936", "Ocean Sunfish/30/smooth/70/121/600 1900/summer fall/both/690 .4 685 .1/3/.3/.3/5/false");
+                        editor.Data.Add("937", "Sea Slug/20/smooth/1/24/600 2600/spring summer fall winter/both/690 .4 685 .1/5/.3/.2/3/false");
 
                     });
 
@@ -102,6 +103,7 @@ namespace ExpandedOcean
                 {
                     e.Edit(asset =>
                     {
+
                         var editor = asset.AsDictionary<string, StardewValley.GameData.Objects.ObjectData>();
 
                         StardewValley.GameData.Objects.ObjectData oceanSunfish = new StardewValley.GameData.Objects.ObjectData
@@ -112,7 +114,7 @@ namespace ExpandedOcean
                             Type = "Fish",
                             Category = -4,
                             Price = 800,
-                            Texture = "C:\\Users\\azure\\Desktop\\files\\repos\\StardewValleyMods\\ExpandedOcean\\assets\\Ocean Sunfish", //TODO i wonder if i can leave this null...
+                            Texture = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Ocean Sunfish",
                             SpriteIndex = 936,
                             Edibility = 15,
                             IsDrink = false,
@@ -125,15 +127,45 @@ namespace ExpandedOcean
                             ExcludeFromRandomSale = false,
                             ContextTags = [
                               "color_blue",
-                              "fish_pond",
-                              "fish_river", //TODO fish_ocean
+                              "fish_ocean",
                               "season_fall",
-                              "season_spring" //TODO change back to season_summer
+                              "season_summer"
+                            ],
+                            CustomFields = null
+                        };
+                        editor.Data.Add("936", oceanSunfish);
+
+                        StardewValley.GameData.Objects.ObjectData seaSlug = new StardewValley.GameData.Objects.ObjectData
+                        {
+                            Name = "Sea Slug",
+                            DisplayName = "Sea Slug",
+                            Description = "fuuuck bro",
+                            Type = "Fish",
+                            Category = -4,
+                            Price = 50,
+                            Texture = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Sea Slug",
+                            SpriteIndex = 937,
+                            Edibility = 7,
+                            IsDrink = false,
+                            Buffs = null,
+                            GeodeDropsDefaultItems = false,
+                            GeodeDrops = null,
+                            ArtifactSpotChances = null,
+                            ExcludeFromFishingCollection = false,
+                            ExcludeFromShippingCollection = false,
+                            ExcludeFromRandomSale = false,
+                            ContextTags = [
+                              "color_blue",
+                              "fish_ocean",
+                              "season_spring",
+                              "season_summer",
+                              "season_fall",
+                              "season_winter"
                             ],
                             CustomFields = null
                         };
 
-                        editor.Data.Add("936", oceanSunfish);
+                        editor.Data.Add("937", seaSlug);
                     });
 
                     objectDataAdded = true;
@@ -150,6 +182,11 @@ namespace ExpandedOcean
                 fishID = 936;
                 fishObject = new StardewValley.Object("936", 1, false, -1, 0);
                 return fishObject;
+            } else if (result.Name.Equals("Sea Slug"))
+            {
+                fishID = 937;
+                fishObject = new StardewValley.Object("937", 1, false, -1, 0);
+                return fishObject;
             }
 
             return result;
@@ -164,19 +201,13 @@ namespace ExpandedOcean
             {
                 spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Ocean Sunfish.png"), objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingPosition().Y + 3) / 10000f));
             }
-            else
+            else if (f.ActiveObject.ParentSheetIndex == 937)
             {
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Sea Slug.png"), objectPosition, rectangle, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, Math.Max(0f, (float)(f.getStandingPosition().Y + 3) / 10000f));
+            }
+            else {
                 return true;
             }
-
-            /*if (!(Math.Abs(Game1.starCropShimmerPause) <= 0.05f) || !(Game1.random.NextDouble() < 0.97))
-            {
-                Game1.starCropShimmerPause += 0.04f;
-                if (Game1.starCropShimmerPause >= 0.8f)
-                {
-                    Game1.starCropShimmerPause = -0.8f;
-                }
-            }*/ //Going to hope this isn't important...
 
             return false;
         }
@@ -188,6 +219,10 @@ namespace ExpandedOcean
             if (__instance.ParentSheetIndex == 936)
             {
                 spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Ocean Sunfish.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
+            }
+            else if (__instance.ParentSheetIndex == 937)
+            {
+                spriteBatch.Draw(modContentHelper.Load<Texture2D>("assets/Sea Slug.png"), location + new Vector2((int)(32f * scaleSize), (int)(32f * scaleSize)), new Rectangle(0, 0, 16, 16), color * transparency, 0f, new Vector2(8f, 8f) * scaleSize, 4f * scaleSize, SpriteEffects.None, layerDepth);
             }
             else
             {
@@ -222,6 +257,9 @@ namespace ExpandedOcean
                 {
                     case 936:
                         textureName = "assets/Ocean Sunfish.png";
+                        break;
+                    case 937:
+                        textureName = "assets/Sea Slug.png";
                         break;
                     default:
                         return true;
@@ -302,6 +340,10 @@ namespace ExpandedOcean
             {
                 __instance.texture = modContentHelper.Load<Texture2D>(textureName);
                 return false;
+            } else if (textureName == "assets/Sea Slug.png")
+            {
+                __instance.texture = modContentHelper.Load<Texture2D>(textureName);
+                return false;
             }
             else
             {
@@ -309,15 +351,15 @@ namespace ExpandedOcean
             }
         }
 
-        //TODO fish needs to be drawn in collection menu
-
         public static bool DoPullFromWater(BinaryReader argReader, FishingRod __instance)
         {
+            if ((fishID != 937) && (fishID != 936))
+            {
+                return true;
+            }
+
             Farmer who = Game1.player;
             string fishId = argReader.ReadString();
-
-            //for debug
-            fishId = "936";
 
             int fishSize = argReader.ReadInt32();
             int fishQuality = argReader.ReadInt32();
@@ -379,7 +421,13 @@ namespace ExpandedOcean
                 if (fishId == "936")
                 {
                     ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
-                    sprite_sheet_name = "C:\\Users\\azure\\Desktop\\files\\repos\\StardewValleyMods\\ExpandedOcean\\assets\\Ocean Sunfish";
+                    sprite_sheet_name = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Ocean Sunfish";
+                    sprite_rect = new Rectangle(0, 0, 16, 16);
+                }
+                else if (fishId == "937")
+                {
+                    ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
+                    sprite_sheet_name = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Sea Slug";
                     sprite_rect = new Rectangle(0, 0, 16, 16);
                 }
                 else
@@ -533,7 +581,7 @@ namespace ExpandedOcean
 
         public static void FishFrame(SpriteBatch b, FishingRod __instance)
         {
-            if (__instance.whichFish != null)
+            if ((__instance.whichFish != null) && ((fishID == 936) || (fishID == 937)))
             {
                 Farmer who = Game1.player;
                 bool fishIsObject = __instance.whichFish.TypeIdentifier == "(O)";
@@ -555,6 +603,19 @@ namespace ExpandedOcean
                         b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, who.Position + new Vector2(0f, -56f)), sourceRect, Color.White, (__instance.fishSize == -1 || __instance.whichFish.QualifiedItemId == "(O)800" || __instance.whichFish.QualifiedItemId == "(O)798" || __instance.whichFish.QualifiedItemId == "(O)149" || __instance.whichFish.QualifiedItemId == "(O)151") ? 0f : ((float)Math.PI * 3f / 4f), new Vector2(8f, 8f), 3f, SpriteEffects.None, (float)playerStandingY / 10000f + 0.002f + 0.06f);
                     }
 
+                } else if (__instance.whichFish == ItemRegistry.GetMetadata("937"))
+                {
+                    Texture2D texture = modContentHelper.Load<Texture2D>("assets/Sea Slug.png");
+                    Rectangle sourceRect = new Rectangle(0, 0, 16, 16);
+
+                    if (__instance.fishCaught == true)
+                    {
+                        /* This draws it in the little frame. */
+                        b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, who.Position + new Vector2(-124f, -284f + yOffset) + new Vector2(44f, 68f)), sourceRect, Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, (float)playerStandingY / 10000f + 0.0001f + 0.06f);
+
+                        /* This draws it in the player's hand. */
+                        b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, who.Position + new Vector2(0f, -56f)), sourceRect, Color.White, (__instance.fishSize == -1 || __instance.whichFish.QualifiedItemId == "(O)800" || __instance.whichFish.QualifiedItemId == "(O)798" || __instance.whichFish.QualifiedItemId == "(O)149" || __instance.whichFish.QualifiedItemId == "(O)151") ? 0f : ((float)Math.PI * 3f / 4f), new Vector2(8f, 8f), 3f, SpriteEffects.None, (float)playerStandingY / 10000f + 0.002f + 0.06f);
+                    }
                 }
             }
         }
@@ -563,6 +624,7 @@ namespace ExpandedOcean
         private void Debug(object sender, DayStartedEventArgs e)
         {
             Game1.player.addItemByMenuIfNecessary((Item)new StardewValley.Object("936", 1, false, -1, 0));
+            Game1.player.addItemByMenuIfNecessary((Item)new StardewValley.Object("937", 1, false, -1, 0));
         }
     }
 }
