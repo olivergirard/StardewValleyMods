@@ -12,8 +12,6 @@ using StardewValley.ItemTypeDefinitions;
 
 namespace ExpandedOcean
 {
-    //TODO modify cropping on fish collection menu so silhouettes show up properly
-
     public class ModEntry : Mod
     {
         public static IModContentHelper modContentHelper = null;
@@ -106,6 +104,9 @@ namespace ExpandedOcean
 
                         var editor = asset.AsDictionary<string, StardewValley.GameData.Objects.ObjectData>();
 
+                        string fileName = "assets/" + "Ocean Sunfish";
+                        string texturePath = Path.Combine(Helper.DirectoryPath, fileName);
+
                         StardewValley.GameData.Objects.ObjectData oceanSunfish = new StardewValley.GameData.Objects.ObjectData
                         {
                             Name = "Ocean Sunfish",
@@ -114,8 +115,8 @@ namespace ExpandedOcean
                             Type = "Fish",
                             Category = -4,
                             Price = 800,
-                            Texture = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Ocean Sunfish",
-                            SpriteIndex = 936,
+                            Texture = texturePath,
+                            SpriteIndex = 0,
                             Edibility = 15,
                             IsDrink = false,
                             Buffs = null,
@@ -135,16 +136,19 @@ namespace ExpandedOcean
                         };
                         editor.Data.Add("936", oceanSunfish);
 
+                        fileName = "assets/" + "Sea Slug";
+                        texturePath = Path.Combine(Helper.DirectoryPath, fileName);
+
                         StardewValley.GameData.Objects.ObjectData seaSlug = new StardewValley.GameData.Objects.ObjectData
                         {
                             Name = "Sea Slug",
                             DisplayName = "Sea Slug",
-                            Description = "fuuuck bro",
+                            Description = "Actually a mollusk.",
                             Type = "Fish",
                             Category = -4,
                             Price = 50,
-                            Texture = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Sea Slug",
-                            SpriteIndex = 937,
+                            Texture = texturePath,
+                            SpriteIndex = 0,
                             Edibility = 7,
                             IsDrink = false,
                             Buffs = null,
@@ -421,13 +425,13 @@ namespace ExpandedOcean
                 if (fishId == "936")
                 {
                     ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
-                    sprite_sheet_name = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Ocean Sunfish";
+                    sprite_sheet_name = "";
                     sprite_rect = new Rectangle(0, 0, 16, 16);
                 }
                 else if (fishId == "937")
                 {
                     ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
-                    sprite_sheet_name = "C:/Users/azure/Desktop/files/repos/StardewValleyMods/ExpandedOcean/assets/Sea Slug";
+                    sprite_sheet_name = "";
                     sprite_rect = new Rectangle(0, 0, 16, 16);
                 }
                 else
