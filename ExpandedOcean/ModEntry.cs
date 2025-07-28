@@ -1,21 +1,21 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using HarmonyLib;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using HarmonyLib;
 using StardewValley;
-using Microsoft.Xna.Framework;
-using System;
-using System.Reflection;
-using System.IO;
-using StardewValley.Tools;
-using StardewValley.ItemTypeDefinitions;
 using StardewValley.GameData.Locations;
+using StardewValley.Internal;
+using StardewValley.ItemTypeDefinitions;
+using StardewValley.Tools;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace ExpandedOcean
 {
-
-    // TODO: Verify that fish can be caught naturally in the game, without forcing them in. 
+    // TODO: Add more fish and fix ugly sprites.
     public class ModEntry : Mod
     {
         public static IModContentHelper modContentHelper = null;
@@ -37,7 +37,7 @@ namespace ExpandedOcean
             /* Function used for adding fish data to the game. */
 
             harmony.Patch(
-               original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.getFish)),
+               original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.GetFishFromLocationData), new Type[] { typeof(string), typeof(Vector2), typeof(int), typeof(Farmer), typeof(bool), typeof(bool), typeof(GameLocation), typeof(ItemQueryContext) }),
                postfix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.SpecialFish))
             );
 
@@ -90,9 +90,9 @@ namespace ExpandedOcean
                     {
                         var editor = asset.AsDictionary<string, string>();
 
-                        editor.Data.Add("936", "Ocean Sunfish/30/smooth/70/121/600 1900/summer fall/both/690 .4 685 .1/3/.3/.3/5/false");
-                        editor.Data.Add("937", "Sea Slug/20/smooth/1/24/600 2600/spring summer fall winter/both/690 .4 685 .1/5/.3/.2/3/false");
-                        
+                        editor.Data.Add("936", "Ocean Sunfish/60/smooth/70/121/600 1800/summer fall/both/690 .4 685 .1/3/.3/.3/5/false");
+                        editor.Data.Add("937", "Sea Slug/30/smooth/1/24/600 2600/spring summer fall winter/both/690 .4 685 .1/5/.3/.2/3/false");
+
                     });
 
                     fishDataAdded = true;
@@ -187,7 +187,7 @@ namespace ExpandedOcean
                         {
                             if (beachData.Fish == null)
                             {
-                                beachData.Fish = new List<StardewValley.GameData.Locations.SpawnFishData>();
+                                beachData.Fish = new List<SpawnFishData>();
                             }
 
                             /* Ocean Sunfish. */
@@ -195,7 +195,7 @@ namespace ExpandedOcean
                             {
                                 Chance = 1,
                                 Season = null,
-                                FishAreaId = "Ocean",
+                                FishAreaId = null,
                                 BobberPosition = null,
                                 PlayerPosition = null,
                                 MinFishingLevel = 3,
@@ -209,12 +209,12 @@ namespace ExpandedOcean
                                 RequireMagicBait = false,
                                 Precedence = -25,
                                 IgnoreFishDataRequirements = false,
-                                CanBeInherited = false,
+                                CanBeInherited = true,
                                 ChanceModifiers = null,
                                 ChanceModifierMode = StardewValley.GameData.QuantityModifier.QuantityModifierMode.Stack,
                                 ChanceBoostPerLuckLevel = 0,
                                 UseFishCaughtSeededRandom = false,
-                                Condition = "LOCATION_SEASON Here summer fall",
+                                Condition = "LOCATION_SEASON Here summer fall, TIME 0600 1800",
                                 Id = "(O)936",
                                 ItemId = "(O)936",
                                 RandomItemId = null,
@@ -241,7 +241,7 @@ namespace ExpandedOcean
                             {
                                 Chance = 1,
                                 Season = null,
-                                FishAreaId = "Ocean",
+                                FishAreaId = null,
                                 BobberPosition = null,
                                 PlayerPosition = null,
                                 MinFishingLevel = 0,
@@ -255,7 +255,7 @@ namespace ExpandedOcean
                                 RequireMagicBait = false,
                                 Precedence = 0,
                                 IgnoreFishDataRequirements = false,
-                                CanBeInherited = false,
+                                CanBeInherited = true,
                                 ChanceModifiers = null,
                                 ChanceModifierMode = StardewValley.GameData.QuantityModifier.QuantityModifierMode.Stack,
                                 ChanceBoostPerLuckLevel = 0,
@@ -282,8 +282,8 @@ namespace ExpandedOcean
 
                             beachData.Fish.Add(fish);
                         }
-
                     }
+
                     );
 
                     locationDataAdded = true;
@@ -542,14 +542,12 @@ namespace ExpandedOcean
                 if (fishId == "936")
                 {
                     ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
-                    //sprite_sheet_name = "";
                     sprite_sheet_name = modContentHelper.GetInternalAssetName("assets/Ocean Sunfish.png").BaseName;
                     sprite_rect = new Rectangle(0, 0, 16, 16);
                 }
                 else if (fishId == "937")
                 {
                     ParsedItemData parsedOrErrorData = __instance.whichFish.GetParsedOrErrorData();
-                    //sprite_sheet_name = "";
                     sprite_sheet_name = modContentHelper.GetInternalAssetName("assets/Sea Slug.png").BaseName;
                     sprite_rect = new Rectangle(0, 0, 16, 16);
                 }
@@ -698,6 +696,8 @@ namespace ExpandedOcean
                     who.FarmerSprite.animateBackwardsOnce(302, t);
                     break;
             }
+
+            fishID = 0;
 
             return false;
         }
