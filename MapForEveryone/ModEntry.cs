@@ -35,7 +35,7 @@ namespace MapForEveryone
                 foreach (NPC villager in location.characters)
                 {
 
-                    MapAreaPosition positionData = WorldMapManager.GetPositionData(villager.currentLocation, villager.TilePoint);
+                    MapAreaPosition positionData = WorldMapManager.GetPositionDataWithoutFallback(villager.currentLocation, villager.TilePoint);
 
                     if (positionData != null && !(positionData.Region.Id != __instance.mapRegion.Id))
                     {
